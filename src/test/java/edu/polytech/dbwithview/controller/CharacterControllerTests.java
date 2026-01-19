@@ -1,0 +1,137 @@
+package edu.polytech.dbwithview.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.polytech.dbwithview.model.FictionalCharacter;
+import edu.polytech.dbwithview.repository.CharacterRepo;
+import edu.polytech.dbwithview.service.CharacterService;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(CharacterController.class)
+class CharacterControllerTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private CharacterService service;
+
+    @MockBean
+    private CharacterRepo characterRepo;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void addCharacter_shouldReturnCharacter() throws Exception {
+        FictionalCharacter character =
+                new FictionalCharacter(1L, "Harry", "Potter");
+
+        Mockito.when(service.saveFictionalCharacter(Mockito.any(FictionalCharacter.class)))
+                .thenReturn(character);
+
+        mockMvc.perform(post("/addCharacter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(character)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname").value("Harry"))
+                .andExpect(jsonPath("$.lastname").value("Potter"));
+    }
+
+    @Test
+    void addCharacters_shouldReturnCharacterList() throws Exception {
+        FictionalCharacter c1 =
+                new FictionalCharacter(1L, "Harry", "Potter");
+        FictionalCharacter c2 =
+                new FictionalCharacter(2L, "Hermione", "Granger");
+
+        List<FictionalCharacter> characters = Arrays.asList(c1, c2);
+
+        Mockito.when(service.saveFictionalCharacters(Mockito.anyList()))
+                .thenReturn(characters);
+
+        mockMvc.perform(post("/addCharacters")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(characters)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].firstname").value("Harry"))
+                .andExpect(jsonPath("$[1].firstname").value("Hermione"));
+    }
+
+    @Test
+    void findAllCharacters_shouldReturnList() throws Exception {
+        FictionalCharacter character =
+                new FictionalCharacter(1L, "Harry", "Potter");
+
+        Mockito.when(service.getFictionalCharacters())
+                .thenReturn(List.of(character));
+
+        mockMvc.perform(get("/characters"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].firstname").value("Harry"));
+    }
+
+    @Test
+    void findCharacterById_shouldReturnCharacter() throws Exception {
+        FictionalCharacter character =
+                new FictionalCharacter(1L, "Harry", "Potter");
+
+        Mockito.when(service.getFictionalCharacterById(1L))
+                .thenReturn(character);
+
+        mockMvc.perform(get("/characterById/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname").value("Harry"))
+                .andExpect(jsonPath("$.lastname").value("Potter"));
+    }
+
+    @Test
+    void findCharacterByName_shouldReturnCharacter() throws Exception {
+        FictionalCharacter character =
+                new FictionalCharacter(1L, "Harry", "Potter");
+
+        Mockito.when(service.getFictionalCharacterByName("Harry"))
+                .thenReturn(character);
+
+        mockMvc.perform(get("/character/{name}", "Harry"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname").value("Harry"));
+    }
+
+    @Test
+    void updateCharacter_shouldReturnUpdatedCharacter() throws Exception {
+        FictionalCharacter updated =
+                new FictionalCharacter(1L, "Harry", "Weasley");
+
+        Mockito.when(service.updateFictionalCharacter(Mockito.any(FictionalCharacter.class)))
+                .thenReturn(updated);
+
+        mockMvc.perform(put("/update")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updated)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lastname").value("Weasley"));
+    }
+
+    @Test
+    void deleteCharacter_shouldReturnMessage() throws Exception {
+        Mockito.when(service.deleteFictionalCharacter(1L))
+                .thenReturn("Character deleted");
+
+        mockMvc.perform(delete("/delete/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Character deleted"));
+    }
+}
