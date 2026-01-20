@@ -9,12 +9,12 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>edu.polytech</groupId>
-    <artifactId>DBWithView</artifactId>
+    <artifactId>springexample</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>DBWithView</name>
-    <description>DBWithView</description>
+    <name>springexample</name>
+    <description>springexample</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>
