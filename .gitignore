@@ -1,0 +1,8 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Java compiled files
+*.class
