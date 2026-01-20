@@ -3,7 +3,6 @@ package edu.polytech.springexample.controller;
 import edu.polytech.springexample.model.FictionalCharacter;
 import edu.polytech.springexample.service.CharacterService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -7,7 +7,8 @@ import edu.polytech.springexample.service.CharacterService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,8 +19,9 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CharacterController.class)
-class CharacterControllerTests {
+@SpringBootTest
+@AutoConfigureMockMvc
+public class CharacterControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -27,6 +29,7 @@ class CharacterControllerTests {
     @MockBean
     private CharacterService service;
 
+    @SuppressWarnings("unused")
     @MockBean
     private CharacterRepo characterRepo;
 

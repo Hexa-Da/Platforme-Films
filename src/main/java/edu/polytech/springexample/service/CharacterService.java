@@ -2,7 +2,6 @@ package edu.polytech.springexample.service;
 
 import edu.polytech.springexample.model.FictionalCharacter;
 import edu.polytech.springexample.repository.CharacterRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,8 +9,11 @@ import java.util.List;
 @Service
 public class CharacterService {
 
-    @Autowired
-    private CharacterRepo repository;
+    private final CharacterRepo repository;
+
+    public CharacterService(CharacterRepo repository) {
+        this.repository = repository;
+    }
 
     public FictionalCharacter saveFictionalCharacter(FictionalCharacter character) {
         return repository.save(character);
@@ -40,6 +42,7 @@ public class CharacterService {
 
     public FictionalCharacter updateFictionalCharacter(FictionalCharacter character) {
         FictionalCharacter existingFictionalCharacter = repository.findById(character.getId()).orElse(null);
+        assert existingFictionalCharacter != null;
         existingFictionalCharacter.setFirstname(character.getFirstname());
         existingFictionalCharacter.setLastname(character.getLastname());
         return repository.save(existingFictionalCharacter);
