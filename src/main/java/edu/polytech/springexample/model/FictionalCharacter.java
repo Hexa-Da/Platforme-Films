@@ -1,4 +1,4 @@
-package edu.polytech.dbwithview.model;
+package edu.polytech.springexample.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

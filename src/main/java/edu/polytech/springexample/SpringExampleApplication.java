@@ -1,7 +1,7 @@
-package edu.polytech.dbwithview;
+package edu.polytech.springexample;
 
-import edu.polytech.dbwithview.repository.CharacterRepo;
-import edu.polytech.dbwithview.model.FictionalCharacter;
+import edu.polytech.springexample.repository.CharacterRepo;
+import edu.polytech.springexample.model.FictionalCharacter;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -9,10 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class DbWithViewApplication {
+public class SpringExampleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DbWithViewApplication.class, args);
+        SpringApplication.run(SpringExampleApplication.class, args);
     }
 
     @Bean

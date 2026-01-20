@@ -1,7 +1,7 @@
-package edu.polytech.dbwithview.service;
+package edu.polytech.springexample.service;
 
-import edu.polytech.dbwithview.model.FictionalCharacter;
-import edu.polytech.dbwithview.repository.CharacterRepo;
+import edu.polytech.springexample.model.FictionalCharacter;
+import edu.polytech.springexample.repository.CharacterRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

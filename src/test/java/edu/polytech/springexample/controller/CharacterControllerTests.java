@@ -1,9 +1,9 @@
-package edu.polytech.dbwithview.controller;
+package edu.polytech.springexample.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.polytech.dbwithview.model.FictionalCharacter;
-import edu.polytech.dbwithview.repository.CharacterRepo;
-import edu.polytech.dbwithview.service.CharacterService;
+import edu.polytech.springexample.model.FictionalCharacter;
+import edu.polytech.springexample.repository.CharacterRepo;
+import edu.polytech.springexample.service.CharacterService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

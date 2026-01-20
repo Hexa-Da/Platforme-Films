@@ -1,6 +1,6 @@
-package edu.polytech.dbwithview.repository;
+package edu.polytech.springexample.repository;
 
-import edu.polytech.dbwithview.model.FictionalCharacter;
+import edu.polytech.springexample.model.FictionalCharacter;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

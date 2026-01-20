@@ -1,7 +1,7 @@
-package edu.polytech.dbwithview.controller;
+package edu.polytech.springexample.controller;
 
-import edu.polytech.dbwithview.model.FictionalCharacter;
-import edu.polytech.dbwithview.service.CharacterService;
+import edu.polytech.springexample.model.FictionalCharacter;
+import edu.polytech.springexample.service.CharacterService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -11,8 +11,11 @@ import java.util.List;
 @RestController
 public class CharacterController {
 
-    @Autowired
-    private CharacterService service;
+    private final CharacterService service;
+
+    public CharacterController(CharacterService service) {
+        this.service = service;
+    }
 
     @PostMapping("/addCharacter")
     public FictionalCharacter addCharacter(@RequestBody FictionalCharacter character) {
@@ -30,12 +33,12 @@ public class CharacterController {
     }
 
     @GetMapping("/characterById/{id}")
-    public FictionalCharacter findCharacterById(@PathVariable Long id) {
+    public FictionalCharacter findCharacterById(@PathVariable("id") Long id) {
         return service.getFictionalCharacterById(id);
     }
 
     @GetMapping("/character/{name}")
-    public FictionalCharacter findCharacterByName(@PathVariable String name) {
+    public FictionalCharacter findCharacterByName(@PathVariable("name") String name) {
         return service.getFictionalCharacterByName(name);
     }
 
@@ -45,7 +48,7 @@ public class CharacterController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public String deleteCharacter(@PathVariable Long id) {
+    public String deleteCharacter(@PathVariable("id") Long id) {
         return service.deleteFictionalCharacter(id);
     }
 }

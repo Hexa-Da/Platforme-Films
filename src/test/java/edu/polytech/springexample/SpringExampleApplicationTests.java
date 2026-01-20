@@ -1,10 +1,10 @@
-package edu.polytech.dbwithview;
+package edu.polytech.springexample;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DbWithViewApplicationTests {
+class SpringExampleApplicationTests {
 
     @Test
     void contextLoads() {
