@@ -1,0 +1,29 @@
+meta {
+  name: Ajouter un personnage
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/addCharacter
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": null,
+    "firstname": "Frodo",
+    "lastname": "Baggins",
+    "universe": "Le Seigneur des Anneaux"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

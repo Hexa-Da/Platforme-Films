@@ -1,0 +1,20 @@
+meta {
+  name: Personnage par nom
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/character/Bilbo
+  body: none
+  auth: inherit
+}
+
+params:query {
+  : 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
