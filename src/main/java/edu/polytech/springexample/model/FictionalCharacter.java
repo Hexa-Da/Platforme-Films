@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-
+import lombok.Data;
 
 /**
  * Here is our Model (from MVC)
@@ -15,6 +15,8 @@ import jakarta.persistence.Id;
  * in Java(R) environments.
  * see https://jakarta.ee/specifications/persistence/
  */
+
+@Data
 @Entity
 public class FictionalCharacter {
 
@@ -26,7 +28,6 @@ public class FictionalCharacter {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     private String firstname;
     private String lastname;
     private String universe;
@@ -40,32 +41,4 @@ public class FictionalCharacter {
         this.lastname = lastname;
         this.universe = universe;
     }
-
-    public Long getId() {
-        return id;
-    }
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getUniverse() {
-        return universe;
-    }
-
-    public void setUniverse(String universe) {
-        this.universe = universe;
-    }
-
 }
