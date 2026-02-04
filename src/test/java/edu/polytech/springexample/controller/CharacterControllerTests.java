@@ -39,7 +39,7 @@ public class CharacterControllerTests {
     @Test
     void addCharacter_shouldReturnCharacter() throws Exception {
         FictionalCharacter character =
-                new FictionalCharacter(1L, "Harry", "Potter");
+                new FictionalCharacter(1L, "Harry", "Potter", "Harry Potter");
 
         Mockito.when(service.saveFictionalCharacter(Mockito.any(FictionalCharacter.class)))
                 .thenReturn(character);
@@ -49,15 +49,16 @@ public class CharacterControllerTests {
                         .content(objectMapper.writeValueAsString(character)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstname").value("Harry"))
-                .andExpect(jsonPath("$.lastname").value("Potter"));
+                .andExpect(jsonPath("$.lastname").value("Potter"))
+                .andExpect(jsonPath("$.universe").value("Harry Potter"));
     }
 
     @Test
     void addCharacters_shouldReturnCharacterList() throws Exception {
         FictionalCharacter c1 =
-                new FictionalCharacter(1L, "Harry", "Potter");
+                new FictionalCharacter(1L, "Harry", "Potter", "Harry Potter");
         FictionalCharacter c2 =
-                new FictionalCharacter(2L, "Hermione", "Granger");
+                new FictionalCharacter(2L, "Hermione", "Granger", "Harry Potter");
 
         List<FictionalCharacter> characters = Arrays.asList(c1, c2);
 
@@ -76,7 +77,7 @@ public class CharacterControllerTests {
     @Test
     void findAllCharacters_shouldReturnList() throws Exception {
         FictionalCharacter character =
-                new FictionalCharacter(1L, "Harry", "Potter");
+                new FictionalCharacter(1L, "Harry", "Potter", "Harry Potter");
 
         Mockito.when(service.getFictionalCharacters())
                 .thenReturn(List.of(character));
@@ -89,7 +90,7 @@ public class CharacterControllerTests {
     @Test
     void findCharacterById_shouldReturnCharacter() throws Exception {
         FictionalCharacter character =
-                new FictionalCharacter(1L, "Harry", "Potter");
+                new FictionalCharacter(1L, "Harry", "Potter", "Harry Potter");
 
         Mockito.when(service.getFictionalCharacterById(1L))
                 .thenReturn(character);
@@ -97,13 +98,14 @@ public class CharacterControllerTests {
         mockMvc.perform(get("/characterById/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstname").value("Harry"))
-                .andExpect(jsonPath("$.lastname").value("Potter"));
+                .andExpect(jsonPath("$.lastname").value("Potter"))
+                .andExpect(jsonPath("$.universe").value("Harry Potter"));
     }
 
     @Test
     void findCharacterByName_shouldReturnCharacter() throws Exception {
         FictionalCharacter character =
-                new FictionalCharacter(1L, "Harry", "Potter");
+                new FictionalCharacter(1L, "Harry", "Potter", "Harry Potter");
 
         Mockito.when(service.getFictionalCharacterByName("Harry"))
                 .thenReturn(character);
@@ -116,7 +118,7 @@ public class CharacterControllerTests {
     @Test
     void updateCharacter_shouldReturnUpdatedCharacter() throws Exception {
         FictionalCharacter updated =
-                new FictionalCharacter(1L, "Harry", "Weasley");
+                new FictionalCharacter(1L, "Harry", "Weasley", "Harry Potter");
 
         Mockito.when(service.updateFictionalCharacter(Mockito.any(FictionalCharacter.class)))
                 .thenReturn(updated);
