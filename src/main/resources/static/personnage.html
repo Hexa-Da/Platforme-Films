@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Personnages - API</title>
+</head>
+<body>
+    <center>
+
+        <h1>Liste des personnages</h1>
+        <button id="load-all">Charger les personnages</button>
+        <div id="load-all-results"></div>
+
+        <br>
+        <h2>Chercher un personnage</h2>
+        <input type="text" id="name-input" placeholder="Entrez un nom">
+        <button id="search-name">Chercher</button>
+        <div id="search-name-results"></div>
+        <input type="number" id="id-input" placeholder="Entrez un id">
+        <button id="search-id">Chercher</button>
+        <div id="search-id-results"></div>
+
+        <br>
+        <h2>Ajouter un personnage</h2>
+        <input type="text" id="firstname-add-input" placeholder="Entrez un prénom">
+        <input type="text" id="lastname-add-input" placeholder="Entrez un nom">
+        <input type="text" id="universe-add-input" placeholder="Entrez un univers">
+        <button id="add-character">Ajouter</button>
+        <div id="add-results"></div>
+
+        <br>
+        <h2>Mettre à jour un personnage</h2>
+        <input type="number" id="id-update-input" placeholder="Entrez un id">
+        <input type="text" id="firstname-update-input" placeholder="Entrez un prénom">
+        <input type="text" id="lastname-update-input" placeholder="Entrez un nom">
+        <input type="text" id="universe-update-input" placeholder="Entrez un univers">
+        <button id="update-character">Mettre à jour</button>
+        <div id="update-results"></div>
+
+        <br>
+        <h2>Supprimer un personnage</h2>
+        <input type="number" id="id-delete-input" placeholder="Entrez un id">
+        <button id="delete-character">Supprimer</button>
+        <div id="delete-results"></div>
+
+    </center>
+  <script src="/js/app.js"></script>
+</body>
+</html>
