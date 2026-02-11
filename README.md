@@ -55,3 +55,4 @@ L'API sera disponible sur http://localhost:8080 avec MySQL sur le port 3306.
 - `src/main/java` : Backend Spring Boot
 - `frontend/` : Application React (Vite)
 - `docs/API.md` : Contrat API
+- `docs/GUIDE.md` : Guide d'utilisation détaillé
