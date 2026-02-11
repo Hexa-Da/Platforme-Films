@@ -5,12 +5,12 @@
 ```
 LOCAL
 ├── main                      # Branche stable, production
-├── develop                   # Branche d'intégration (suit origin/develop)
+├── dev                       # Branche d'intégration (suit origin/dev)
 └── feature/nom-de-la-feature # Votre branche de feature pour développer
 
 REMOTE origin 
 ├── main                      # Branche principale (release)
-├── develop                   # Intégration des features
+├── dev                       # Intégration des features
 ├── feature/reviews-ratings   # Junior 1 - Services + DTOs
 ├── feature/api-swagger       # Junior 2 - API + Swagger + OAuth2
 └── feature/front-tests       # Junior 3 - Front React + Tests + MySQL
@@ -32,8 +32,8 @@ REMOTE origin
 ```bash
 # 1. Récupérer les dernières modifs
 git fetch origin
-git checkout develop
-git pull origin develop
+git checkout dev
+git pull origin dev
 
 # 2. Créer une nouvelle branche de feature
 git checkout -b feature/nom-de-la-feature
@@ -51,7 +51,7 @@ git commit -m "message clair"
 
 # se remettre à jour avec les features des autres (via merge)
 git fetch origin
-git merge origin/develop
+git merge origin/dev
 
 # push sur votre branche distante (optionnel)
 git push origin feature/votre-feature
@@ -62,7 +62,7 @@ git push origin feature/votre-feature
 ```bash
 git fetch origin # télécharger les dernières modifs du remote
 git checkout feature/votre-feature
-git merge origin/develop # intégrer develop dans sa branche
+git merge origin/dev # intégrer dev dans sa branche si pas a jour avec dev
 
 # s'il y a des conflits: éditer → git add fichier.edite → git commit
 
@@ -71,15 +71,15 @@ git push origin feature/votre-feature
 ```
 
 #### En cas de problème
-- **Merge raté** : `git merge --abort`
-- **Branche cassée** : `git checkout develop && git checkout -b feature/nouvelle-feature`
+- **Merge raté** : `git merge --amend`
+- **Branche cassée** : `git checkout dev && git checkout -b feature/nouvelle-feature`
 - **Push refusé** : vérifier qu'on est sur la bonne branche
 
-### Après merge de la PR (dans develop)
+### Après merge de la PR (dans dev)
 
 ```bash
-git checkout develop 
-git pull origin develop # mettre à jour develop en local
+git checkout dev 
+git pull origin dev # mettre à jour dev en local
 
 git branch -d feature/votre-feature # supprimer la branche locale si feature terminée
 git branch -D feature/nom-de-la-branche
@@ -91,14 +91,14 @@ git push origin --delete feature/votre-feature
 git fetch --prune origin # pour mettre à jour les branches distantes existantes
 ```
 
-### Phase finale : merge develop → main
+### Phase finale : merge dev → main
 
-Le Lead valide et fusionne `develop` dans `main` pour une release :
+Le Lead valide et fusionne `dev` dans `main` pour une release :
 
 ```bash
 git checkout main
 git pull origin main
-git merge develop
+git merge dev
 git push origin main
 ```
 
@@ -108,8 +108,8 @@ git push origin main
 # voir l'état de vos branches de travail
 git log --oneline --graph
 
-# voir les commits que vous avez faits qui ne sont pas encore dans develop
-git log --oneline --graph origin/develop..HEAD
+# voir les commits que vous avez faits qui ne sont pas encore dans dev
+git log --oneline --graph origin/dev..HEAD
 
 # voir les commits que vous avez faits qui ne sont pas encore poussés sur votre branche distante
 git log --oneline --graph origin/feature/votre-feature..HEAD
