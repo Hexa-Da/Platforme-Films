@@ -1,0 +1,6 @@
+target/
+.git
+*.md
+frontend/
+.DS_Store
+plateformefilms/
