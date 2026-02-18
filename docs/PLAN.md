@@ -54,20 +54,12 @@
 - Dockerfile + docker-compose (app + MySQL)
 - README avec instructions de lancement
 
-### 6. Ops (Lead uniquement)
-
-- Docker fonctionnel (multi-stage build, healthcheck MySQL)
-- MySQL cloud (PlanetScale / Railway / Aiven) si option choisie
-- OAuth2 (Google/GitHub) si option choisie
-- Swagger : config springdoc, path `/docs`
-
 ### Livrables Lead
 
-- App démarrable (`./mvnw spring-boot:run`)
+- App démarrable
 - Auth fonctionnelle (register, login, JWT)
-- `GET /movies` et `GET /movies/{id}` opérationnels
-- Front React basique connecté à l'API
-- Docker fonctionnel
+- GET /movies opérationnel
+- Front React basique connecté
 - `docs/API.md` à jour
 
 ---
@@ -364,35 +356,6 @@ Pendant que les juniors codent, le Lead gère l'infra et les options :
 | Responsable | Tâches |
 |-------------|--------|
 | **Tous** | Revue de code, tests complets, corrections |
-| **Junior 3** | Doc sur `/` (index.html Thymeleaf), vérifier que toutes les pages React fonctionnent |
+| **Junior 3** | Doc sur `/`, vérifier que toutes les pages React fonctionnent |
 | **Junior 1 & 2** | Vérifier Swagger complet, tester tous les endpoints |
 | **Lead** | Validation finale, merge `dev` → `main`, déploiement |
-
----
-
-## Parallélisme
-
-```
-Semaine 1          Semaine 2          Semaine 3
-─────────────────────────────────────────────────
-Lead: init, auth, docker, front basique
-                   Lead: Ops (MySQL cloud, OAuth2, review PRs)
-                                      Lead: merge, deploy
-Junior 1: ·········ReviewService, RatingService, Controllers, Tests
-Junior 2: ·········MovieService CRUD, UserController, Swagger, Tests
-Junior 3: Navbar, recherche, layout profil
-                   Junior 3: ·········intégration reviews/ratings/profil
-```
-
-- **Junior 1** et **Junior 2** démarrent dès que le Lead livre (les repos sont prêts)
-- **Junior 3** peut commencer tout de suite (navbar, recherche) puis branche sur les endpoints des autres
-
----
-
-## Référence technique
-
-**Modèles** : User, Movie, Review, Rating (JPA)  
-**Endpoints** : `/api/v1/movies` (CRUD, search), `/api/v1/movies/{id}/reviews`, `/api/v1/movies/{id}/ratings`, `/api/v1/users/{id}`, `/api/v1/users/me`, `/api/v1/auth/*`  
-**Security** : JWT dans `Authorization: Bearer <token>`, permitAll sur `/auth/**`, `/docs`, GET `/movies`, GET reviews/ratings  
-**React** : Vite, fetch, JWT dans localStorage  
-**Ops (Lead)** : Docker, MySQL cloud, OAuth2, CI
