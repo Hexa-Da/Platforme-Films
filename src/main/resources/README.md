@@ -29,26 +29,3 @@ mvn spring-boot:run -Dspring-boot.run.profiles=prod
 # ou
 SPRING_PROFILES_ACTIVE=prod java -jar app.jar
 ```
-
----
-
-## `templates/`
-
-Templates **Thymeleaf** rendus côté serveur.
-
-| Fichier | URL | Rôle |
-|---------|-----|------|
-| `index.html` | `/`, `/index.html` | Page d'accueil : liens vers Swagger, liste des endpoints |
-
-Ces pages sont servies par `HtmlController` et servent de point d'entrée vers la doc API et le frontend React.
-
----
-
-## `static/`
-
-Fichiers **statiques** servis tels quels par Spring Boot (sans rendu Thymeleaf).
-
-- **URL** : servis à la racine — ex. `static/js/app.js` → `http://localhost:8080/js/app.js`
-- **Contenu actuel** : reliquats de l'ancien projet "characters" (`app.js`, `personnage.html`) — non utilisés par l'API actuelle
-
-Pour des assets statiques (JS, CSS, images) utilisés par les templates ou par une future intégration, placer les fichiers ici.
