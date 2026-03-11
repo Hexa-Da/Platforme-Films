@@ -8,6 +8,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/movies_db?allowPublicKeyRetrieval=true&useSSL=false
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
     depends_on:
       mysql:
         condition: service_healthy

@@ -32,4 +32,20 @@ public class UserService {
     public User getById(Long id) {
         return userRepo.findById(id).orElse(null);
     }
+
+    public User findOrCreateOAuth2User(String username, String email, String provider) {
+        if (email != null && !email.isBlank()) {
+            return userRepo.findByEmail(email).orElseGet(() -> createOAuth2User(username, email, provider));
+        }
+        return userRepo.findByUsername(username).orElseGet(() -> createOAuth2User(username, email, provider));
+    }
+
+    private User createOAuth2User(String username, String email, String provider) {
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("oauth2-" + provider));
+        user.setCreatedAt(java.time.LocalDateTime.now());
+        return userRepo.save(user);
+    }
 }
