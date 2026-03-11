@@ -41,6 +41,14 @@ export default function Login() {
           required
         />
         <button type="submit">Se connecter</button>
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = 'http://localhost:8080/oauth2/authorization/google'
+          }}
+        >
+          Se connecter avec Google
+        </button>
       </form>
       <p>
         Pas de compte ? <Link to="/register">S'inscrire</Link>

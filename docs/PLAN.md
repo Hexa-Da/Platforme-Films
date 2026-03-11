@@ -343,7 +343,7 @@ Pendant que les juniors codent, le Lead gère l'infra et les options :
 | Tâche | Détail |
 |-------|--------|
 | MySQL cloud | Déployer sur PlanetScale / Railway / Aiven, mettre à jour `application-prod.properties` |
-| OAuth2 (option) | Ajouter `spring-boot-starter-oauth2-client`, configurer Google/GitHub |
+| OAuth2 (option) | Ajouter `spring-boot-starter-oauth2-client`, configurer Google (login OAuth2 → JWT interne) |
 | Docker | Vérifier que `docker-compose up` fonctionne toujours avec les nouvelles features |
 | Swagger | Vérifier que `/docs` affiche tous les endpoints après merge |
 | SecurityConfig | Mettre à jour les règles d'autorisation si nouveaux endpoints (ex: `permitAll` sur GET reviews/ratings) |
