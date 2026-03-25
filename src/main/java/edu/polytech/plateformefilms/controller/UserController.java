@@ -34,12 +34,10 @@ public class UserController {
     @Operation(summary = "Récupérer mon profil", description = "Retourne les infos de l'utilisateur connecté via son JWT")
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMyProfile(@AuthenticationPrincipal UserDetails currentUser) {
-        // @AuthenticationPrincipal extrait l'utilisateur du token JWT automatiquement
         User user = userService.findByUsername(currentUser.getUsername());
         return ResponseEntity.ok(mapToResponse(user));
     }
 
-    // Petite méthode utilitaire pour transformer l'Entité en DTO
     private UserResponse mapToResponse(User user) {
         return new UserResponse(
                 user.getId(),

@@ -3,6 +3,7 @@ package edu.polytech.plateformefilms.controller;
 import edu.polytech.plateformefilms.dto.MovieRequest;
 import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.service.MovieService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,14 @@ public class MovieController {
         this.movieService = movieService;
     }
 
+    @Operation(summary = "Récupérer un film par son ID", description = "Retourne les détails d'un film. Renvoie 404 si l'ID n'existe pas.")
     @GetMapping("/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
         Movie movie = movieService.getById(id);
         return movie != null ? ResponseEntity.ok(movie) : ResponseEntity.notFound().build();
     }
 
+    @Operation(summary = "Lister ou rechercher des films", description = "Récupère tous les films. Possibilité de filtrer par titre ou par genre.")
     @GetMapping
     public ResponseEntity<List<Movie>> getAllMovies(
             @RequestParam(required = false) String title,
@@ -37,6 +40,7 @@ public class MovieController {
     }
 
 
+    @Operation(summary = "Ajouter un nouveau film", description = "Crée un film dans la base de données")
     @PostMapping
     public ResponseEntity<Movie> createMovie(@RequestBody MovieRequest request) {
         Movie movie = new Movie();
@@ -52,6 +56,7 @@ public class MovieController {
     }
 
 
+    @Operation(summary = "Modifier un film existant", description = "Met à jour les informations d'un film et renvoie le film modifié.")
     @PutMapping("/{id}")
     public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody MovieRequest request) {
         Movie updated = new Movie();
@@ -66,6 +71,7 @@ public class MovieController {
         return ResponseEntity.ok(newMovie); // 200 : requête traitée
     }
 
+    @Operation(summary = "Supprimer un film", description = "Supprime un film de la base de données via son ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
         movieService.deleteMovie(id);
