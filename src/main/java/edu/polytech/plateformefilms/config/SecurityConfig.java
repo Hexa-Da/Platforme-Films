@@ -41,9 +41,9 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/docs", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/movies").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/movies/*").permitAll()
+                        .requestMatchers("/docs", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/movies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users/{id:[0-9]+}").permitAll()
                         .requestMatchers("/", "/index.html", "/static/**").permitAll()
                         .anyRequest().authenticated()
                 )
