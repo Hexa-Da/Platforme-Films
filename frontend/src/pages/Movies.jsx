@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getMovies, logout } from '../api'
 import './Movies.css'
+import ReviewPopup from '../popups/ReviewPopup';
 import SearchBar from '../components/SearchBar/SearchBar';
 
 export default function Movies() {
@@ -10,6 +11,7 @@ export default function Movies() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [token] = useState(() => localStorage.getItem('token'))
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   // NOUVEAU : On place la mémoire de la recherche ICI, avant les 'return'
   const [recherche, setRecherche] = useState('')
@@ -36,41 +38,87 @@ export default function Movies() {
     movie.title.toLowerCase().includes(recherche.toLowerCase())
   );
 
+    const handleReviewSubmit = async (data) => {
+      try {
+        const token = localStorage.getItem('token');
+
+        // Envoi de la note
+        await fetch(`http://localhost:8080/api/v1/ratings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ movieId: selectedMovie.id, score: data.score })
+        });
+
+        // Envoi de la critique
+        await fetch(`http://localhost:8080/api/v1/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ movieId: selectedMovie.id, content: data.content })
+        });
+
+        alert("Avis enregistré !");
+        setSelectedMovie(null); // Ferme le popup
+      } catch (err) {
+        alert("Erreur lors de l'envoi");
+      }
+    };
+
   // 4. LE RENDU (JSX)
   return (
     <div className="movies-page">
-      <nav>
-        <Link to="/movies">Films</Link>
-        {token ? (
-          <button onClick={() => { logout(); window.location.reload(); }}>
-            Déconnexion
-          </button>
-        ) : (
-          <>
-            <Link to="/login">Connexion</Link>
-            <Link to="/register">Inscription</Link>
-          </>
-        )}
-      </nav>
+          <nav>
+            <Link to="/movies">Films</Link>
+            {token ? (
+              <button onClick={() => { logout(); window.location.reload(); }}>
+                Déconnexion
+              </button>
+            ) : (
+              <>
+                <Link to="/login">Connexion</Link>
+                <Link to="/register">Inscription</Link>
+              </>
+            )}
+          </nav>
 
-      <h1>Liste des films</h1>
+          <h1>Liste des films</h1>
 
-      {/* On insère la barre de recherche ici */}
-      <SearchBar onSearch={gererLaRecherche} />
+          <SearchBar onSearch={gererLaRecherche} />
 
-      {/* Si la recherche ne donne rien, on affiche un petit message */}
-      {filmsFiltres.length === 0 && <p style={{textAlign: 'center'}}>Aucun film ne correspond à votre recherche.</p>}
+          {/* Si la recherche ne donne rien, on affiche un petit message */}
+          {filmsFiltres.length === 0 && <p style={{textAlign: 'center'}}>Aucun film ne correspond à votre recherche.</p>}
 
-      <div className="movies-grid">
-        {/* On utilise "filmsFiltres.map" au lieu de "movies.map" ! */}
-        {filmsFiltres.map((movie) => (
-          <Link key={movie.id} to={`/movies/${movie.id}`} className="movie-card">
-            <h3>{movie.title}</h3>
-            <p>{movie.director} ({movie.releaseYear})</p>
-            <p className="genre">{movie.genre}</p>
-          </Link>
-        ))}
-      </div>
-    </div>
+          <div className="movies-grid">
+            {/* On utilise "filmsFiltres.map" au lieu de "movies.map" ! */}
+            {filmsFiltres.map((movie) => (
+              <Link key={movie.id} to={`/movies/${movie.id}`} className="movie-card">
+                <h3>{movie.title}</h3>
+                <p>{movie.director} ({movie.releaseYear})</p>
+                <p className="genre">{movie.genre}</p>
+
+                {/* BOUTON DE NOTATION : Visible seulement si connecté */}
+                {token && (
+                  <button
+                    className="rate-button"
+                    onClick={(e) => {
+                      e.preventDefault();  // Empêche la navigation du Link
+                      e.stopPropagation(); // Empêche l'événement de remonter au Link
+                      setSelectedMovie(movie);
+                    }}
+                  >
+                    Noter ce film
+                  </button>
+                )}
+              </Link>
+            ))}
+          </div>
+
+          {selectedMovie && (
+            <ReviewPopup
+              movieTitle={selectedMovie.title}
+              onClose={() => setSelectedMovie(null)}
+              onSubmit={handleReviewSubmit}
+            />
+          )}
+        </div>
   )
 }
