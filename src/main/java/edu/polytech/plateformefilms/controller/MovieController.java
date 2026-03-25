@@ -3,6 +3,7 @@ package edu.polytech.plateformefilms.controller;
 import edu.polytech.plateformefilms.dto.MovieRequest;
 import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.service.MovieService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/movies")
+@Tag(name = "Movies", description = "Gestion des films")
 public class MovieController {
 
     private final MovieService movieService;
