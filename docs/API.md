@@ -12,6 +12,7 @@
 |---------|----------|-------------|
 | POST | `/auth/register` | Inscription |
 | POST | `/auth/login` | Connexion → `{ "token": "..." }` |
+| GET  | `/auth/oauth2/google` | Démarre le flux de connexion avec Google |
 
 **Register** (body JSON):
 ```json

@@ -20,7 +20,11 @@ Ce guide explique comment installer, lancer et utiliser la plateforme de films (
 ### 1. Lancer l'API en mode développement
 
 ```bash
+# sur Window
 ./mvnw spring-boot:run
+
+# sur Linux & macOS
+mvn spring-boot:run
 ```
 
 - **API** : http://localhost:8080
@@ -43,8 +47,10 @@ npm run dev
 
 1. Ouvrir http://localhost:5173
 2. La page **Films** s'affiche (liste des films ; GET /movies est public)
-3. Créer un compte : **S'inscrire** → username, email, password
-4. Se connecter : **Connexion** → username, password
+3. Créer un compte : **S'inscrire** → username, email, password **ou** utiliser le bouton **\"Se connecter avec Google\"** sur la page de connexion.
+4. Se connecter :
+   - soit via **Connexion** → username, password (login classique)
+   - soit via **\"Se connecter avec Google\"** (OAuth2). Dans ce cas, vous êtes redirigé vers Google puis de retour sur le frontend, avec un JWT généré par le backend.
 5. Le token JWT est stocké dans `localStorage` et envoyé automatiquement pour les requêtes protégées
 
 ---
@@ -131,6 +137,12 @@ Le profil `prod` est activé automatiquement. Les variables de connexion sont d�
 | `SPRING_DATASOURCE_URL` | URL JDBC MySQL (profil prod) | `jdbc:mysql://localhost:3306/movies_db` |
 | `SPRING_DATASOURCE_USERNAME` | Identifiant MySQL | `root` |
 | `SPRING_DATASOURCE_PASSWORD` | Mot de passe MySQL | — |
+| `GOOGLE_CLIENT_ID` | Client ID OAuth2 Google | — |
+| `GOOGLE_CLIENT_SECRET` | Client secret OAuth2 Google | — |
+| `FRONTEND_BASE_URL` | URL du frontend utilisée pour les redirections OAuth2 | `http://localhost:5173` |
+
+En développement, ces variables doivent être fournies directement dans l'environnement (ex. `export GOOGLE_CLIENT_ID=...` avant `mvn spring-boot:run`).
+En production avec docker-compose le fichier `.env` à la racine s'en occupe.
 
 ---
 

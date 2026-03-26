@@ -1,0 +1,32 @@
+/* Centre la barre de recherche sur la page */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* Le style principal du champ de texte */
+.search-input {
+  width: 100%;
+  max-width: 400px; /* Évite que la barre prenne tout l'écran sur un grand écran */
+  padding: 12px 20px; /* Espace à l'intérieur de la barre (haut/bas, gauche/droite) */
+  border: 2px solid #333333; /* Une bordure sombre */
+  border-radius: 25px; /* Arrondit les bords pour un effet "pilule" */
+  font-size: 16px;
+  background-color: #1a1a1a; /* Fond sombre typique de Letterboxd */
+  color: #ffffff; /* Texte en blanc */
+  transition: all 0.3s ease; /* Crée une animation douce quand on interagit avec */
+}
+
+/* Change la couleur du texte "Rechercher un film..." (le placeholder) */
+.search-input::placeholder {
+  color: #888888;
+}
+
+/* L'état "focus" : ce qui se passe quand l'utilisateur clique DANS la barre */
+.search-input:focus {
+  outline: none; /* Enlève l'anneau bleu par défaut des navigateurs */
+  border-color: #00e5ff; /* Change la bordure avec une couleur vive (ex: cyan) */
+  background-color: #222222; /* Éclaircit légèrement le fond */
+  box-shadow: 0 4px 10px rgba(0, 229, 255, 0.2); /* Ajoute un léger halo lumineux */
+}
