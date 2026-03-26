@@ -4,11 +4,15 @@ import edu.polytech.plateformefilms.dto.RatingRequest;
 import edu.polytech.plateformefilms.dto.RatingResponse;
 import edu.polytech.plateformefilms.model.Rating;
 import edu.polytech.plateformefilms.service.RatingService;
+import edu.polytech.plateformefilms.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -19,21 +23,40 @@ import java.util.List;
 public class RatingController {
 
     private final RatingService ratingService;
+    private final UserService userService;
 
-    public RatingController(RatingService ratingService) {
+    public RatingController(RatingService ratingService, UserService userService) {
         this.ratingService = ratingService;
+        this.userService = userService;
     }
 
     // Noter un film
     @PostMapping
     @Operation(summary = "Noter un film", description = "Ajoute une note ou met à jour la note existante de l'utilisateur pour ce film.")
-    public ResponseEntity<RatingResponse> rateMovie(@RequestBody RatingRequest request) {
+    public ResponseEntity<RatingResponse> rateMovie(
+            @Valid @RequestBody RatingRequest request,
+            @AuthenticationPrincipal(expression = "username") String username
+    ) {
+        var user = userService.findByUsername(username);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
         // Le service gère si c'est une création ou une mise à jour
-        Rating rating = ratingService.rateMovie(
-                request.movieId(),
-                request.userId(),
-                request.score()
-        );
+        Rating rating;
+        try {
+            rating = ratingService.rateMovie(request.movieId(), user.getId(), request.score());
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("Film non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+            }
+            if (msg.contains("Utilisateur non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, msg);
+            }
+            throw e;
+        }
+
         return new ResponseEntity<>(convertToDto(rating), HttpStatus.CREATED);
     }
 

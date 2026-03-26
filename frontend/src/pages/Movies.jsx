@@ -41,25 +41,36 @@ export default function Movies() {
     const handleReviewSubmit = async (data) => {
       try {
         const token = localStorage.getItem('token');
+        if (!selectedMovie) {
+          throw new Error("Aucun film sélectionné");
+        }
 
         // Envoi de la note
-        await fetch(`http://localhost:8080/api/v1/ratings`, {
+        const ratingRes = await fetch(`http://localhost:8080/api/v1/ratings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ movieId: selectedMovie.id, score: data.score })
         });
+        if (!ratingRes.ok) {
+          const errBody = await ratingRes.json().catch(() => null);
+          throw new Error(errBody?.message || "Erreur lors de l'envoi de la note");
+        }
 
         // Envoi de la critique
-        await fetch(`http://localhost:8080/api/v1/reviews`, {
+        const reviewRes = await fetch(`http://localhost:8080/api/v1/reviews`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ movieId: selectedMovie.id, content: data.content })
         });
+        if (!reviewRes.ok) {
+          const errBody = await reviewRes.json().catch(() => null);
+          throw new Error(errBody?.message || "Erreur lors de l'envoi de la critique");
+        }
 
         alert("Avis enregistré !");
         setSelectedMovie(null); // Ferme le popup
       } catch (err) {
-        alert("Erreur lors de l'envoi");
+        alert(err?.message || "Erreur lors de l'envoi");
       }
     };
 

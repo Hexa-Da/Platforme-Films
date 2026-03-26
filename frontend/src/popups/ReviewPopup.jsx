@@ -45,7 +45,7 @@ const ReviewPopup = ({ movieTitle, onClose, onSubmit }) => {
 
         <button
           className="submit-btn"
-          disabled={rating === 0}
+          disabled={rating === 0 || comment.trim().length === 0}
           onClick={handleSubmit}
         >
           Envoyer ma note
