@@ -2,13 +2,17 @@ package edu.polytech.plateformefilms.controller;
 
 import edu.polytech.plateformefilms.model.Review;
 import edu.polytech.plateformefilms.service.ReviewService;
+import edu.polytech.plateformefilms.service.UserService;
 import edu.polytech.plateformefilms.dto.ReviewResponse;
 import edu.polytech.plateformefilms.dto.ReviewRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -19,21 +23,32 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final UserService userService;
 
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, UserService userService) {
         this.reviewService = reviewService;
+        this.userService = userService;
     }
 
     // Création d'un avis
     @PostMapping
     @Operation(summary = "Créer une nouvelle critique", description = "Permet à un utilisateur de poster un avis sur un film.")
-    public ResponseEntity<Review> createReview(@RequestBody ReviewRequest request) {
+    public ResponseEntity<ReviewResponse> createReview(
+            @Valid @RequestBody ReviewRequest request,
+            @AuthenticationPrincipal(expression = "username") String username
+    ) {
+        var user = userService.findByUsername(username);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
         Review newReview = reviewService.createReview(
                 request.movieId(),
-                request.userId(),
+                user.getId(),
                 request.content()
         );
-        return new ResponseEntity<>(newReview, HttpStatus.CREATED);
+
+        return new ResponseEntity<>(convertToDto(newReview), HttpStatus.CREATED);
     }
 
     @GetMapping("/movie/{movieId}")
@@ -61,8 +76,24 @@ public class ReviewController {
 
     @Operation(summary = "Supprimer une critique", description = "Supprime un avis. Seul l'auteur peut effectuer cette action.")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id, @RequestParam Long userId) {
-        reviewService.deleteReview(id, userId);
+    public ResponseEntity<Void> deleteReview(
+            @PathVariable Long id,
+            @AuthenticationPrincipal(expression = "username") String username
+    ) {
+        var user = userService.findByUsername(username);
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
+        try {
+            reviewService.deleteReview(id, user.getId());
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("Interdit")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+        }
         return ResponseEntity.noContent().build();
     }
 }

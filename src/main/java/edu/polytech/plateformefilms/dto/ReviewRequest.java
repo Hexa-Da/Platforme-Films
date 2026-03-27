@@ -11,9 +11,6 @@ public record ReviewRequest(
         @NotNull(message = "L'ID du film est obligatoire")
         Long movieId,
 
-        @NotNull(message = "L'ID de l'utilisateur est obligatoire")
-        Long userId,
-
         @NotBlank(message = "Le contenu de la critique ne peut pas être vide")
         String content
 ) {}
