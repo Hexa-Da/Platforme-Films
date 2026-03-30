@@ -28,7 +28,7 @@ public class MovieService {
     }
 
     public List<Movie> searchByGenre(String genre) {
-        return movieRepo.findByGenre(genre);
+        return movieRepo.findByGenreContainingIgnoreCase(genre);
     }
 
     public Movie createMovie(Movie movie) {

@@ -34,8 +34,12 @@ public class MovieController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String genre) {
 
-        if (title != null) return ResponseEntity.ok(movieService.searchByTitle(title));
-        if (genre != null) return ResponseEntity.ok(movieService.searchByGenre(genre));
+        if (title != null && !title.isBlank()) {
+            return ResponseEntity.ok(movieService.searchByTitle(title.trim()));
+        }
+        if (genre != null && !genre.isBlank()) {
+            return ResponseEntity.ok(movieService.searchByGenre(genre.trim()));
+        }
         return ResponseEntity.ok(movieService.findAll());
     }
 

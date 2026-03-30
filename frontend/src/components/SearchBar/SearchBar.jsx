@@ -3,7 +3,11 @@ import './SearchBar.css'
 
 
 // "onSearch" est une fonction que le composant parent (Movies) va lui passer
-function SearchBar({ onSearch }) {
+function SearchBar({
+  onSearch,
+  placeholder = 'Rechercher un film...',
+  ariaLabel,
+}) {
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleChange = (event) => {
@@ -20,7 +24,8 @@ function SearchBar({ onSearch }) {
           <input
             type="text"
             className="search-input"
-            placeholder="Rechercher un film..."
+            placeholder={placeholder}
+            aria-label={ariaLabel ?? placeholder}
             value={searchTerm}
             onChange={handleChange}
           />

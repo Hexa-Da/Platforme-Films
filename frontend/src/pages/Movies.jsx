@@ -111,13 +111,10 @@ export default function Movies() {
 
       <div className="movies-filters">
         <SearchBar onSearch={setRecherche} />
-        <input
-          type="text"
-          className="genre-filter-input"
-          placeholder="Genre (si titre vide)"
-          value={genreFilter}
-          onChange={(e) => setGenreFilter(e.target.value)}
-          aria-label="Filtrer par genre"
+        <SearchBar
+          onSearch={setGenreFilter}
+          placeholder="Rechercher un genre..."
+          ariaLabel="Filtrer par genre"
         />
       </div>
 
