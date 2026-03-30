@@ -56,7 +56,7 @@ public class MovieController {
     }
 
 
-    @Operation(summary = "Modifier un film existant", description = "Met à jour les informations d'un film et renvoie le film modifié.")
+    @Operation(summary = "Modifier un film existant", description = "Met à jour les informations d'un film et renvoie le film modifié. Renvoie 404 si l'ID n'existe pas.")
     @PutMapping("/{id}")
     public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody MovieRequest request) {
         Movie updated = new Movie();
@@ -68,7 +68,7 @@ public class MovieController {
 
         Movie newMovie = movieService.updateMovie(id, updated);
 
-        return ResponseEntity.ok(newMovie); // 200 : requête traitée
+        return newMovie != null ? ResponseEntity.ok(newMovie) : ResponseEntity.notFound().build();
     }
 
     @Operation(summary = "Supprimer un film", description = "Supprime un film de la base de données via son ID")

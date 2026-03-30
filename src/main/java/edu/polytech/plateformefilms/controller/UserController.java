@@ -35,6 +35,9 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMyProfile(@AuthenticationPrincipal UserDetails currentUser) {
         User user = userService.findByUsername(currentUser.getUsername());
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(mapToResponse(user));
     }
 
