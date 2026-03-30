@@ -92,7 +92,11 @@ export default function Movies() {
           </>
         )}
         {token ? (
-          <button type="button" onClick={() => { logout(); window.location.reload() }}>
+          <button
+            type="button"
+            className="btn-danger"
+            onClick={() => { logout(); window.location.reload() }}
+          >
             Déconnexion
           </button>
         ) : (

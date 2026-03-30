@@ -22,11 +22,3 @@
 .search-input::placeholder {
   color: #888888;
 }
-
-/* L'état "focus" : ce qui se passe quand l'utilisateur clique DANS la barre */
-.search-input:focus {
-  outline: none; /* Enlève l'anneau bleu par défaut des navigateurs */
-  border-color: #00e5ff; /* Change la bordure avec une couleur vive (ex: cyan) */
-  background-color: #222222; /* Éclaircit légèrement le fond */
-  box-shadow: 0 4px 10px rgba(0, 229, 255, 0.2); /* Ajoute un léger halo lumineux */
-}

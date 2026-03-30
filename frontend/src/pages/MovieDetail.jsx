@@ -36,8 +36,6 @@ export default function MovieDetail() {
     <div className="movie-detail">
       <nav className="movie-detail-nav">
         <Link to="/movies">← Films</Link>
-        {token && <Link to="/profile">Mon profil</Link>}
-        {token && <Link to="/movies/new">Ajouter un film</Link>}
       </nav>
 
       <article>
@@ -50,7 +48,7 @@ export default function MovieDetail() {
         {token && (
           <div className="movie-detail-actions">
             <Link to={`/movies/${id}/edit`}>Modifier</Link>
-            <button type="button" onClick={handleDelete} className="delete-button">
+            <button type="button" onClick={handleDelete} className="btn-danger delete-button">
               Supprimer
             </button>
           </div>

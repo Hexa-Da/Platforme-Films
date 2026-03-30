@@ -11,3 +11,39 @@ body {
 .error {
   color: red;
 }
+
+/* Supprimer, déconnexion : texte blanc sur fond rouge */
+button.btn-danger {
+  background: #c62828;
+  color: #fff;
+  border: 1px solid #b71c1c;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.btn-danger:hover {
+  background: #b71c1c;
+  border-color: #8b0000;
+  color: #fff;
+}
+
+.movies-page nav button.btn-danger {
+  color: #fff;
+  background: #c62828;
+  border: 1px solid #b71c1c;
+}
+
+.movies-page nav button.btn-danger:hover {
+  background: #b71c1c;
+  text-decoration: none;
+}
+
+.profile-nav button.btn-danger {
+  color: #fff;
+  background: #c62828;
+  border-color: #b71c1c;
+}
+
+.profile-nav button.btn-danger:hover {
+  background: #b71c1c;
+}

@@ -49,6 +49,7 @@ export default function Profile() {
         <Link to="/movies">← Films</Link>
         <button
           type="button"
+          className="btn-danger"
           onClick={() => {
             logout()
             window.location.href = '/movies'
