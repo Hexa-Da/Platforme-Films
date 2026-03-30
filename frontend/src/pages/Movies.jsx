@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { getMovies, logout } from '../api'
+import { getMovies, logout, API_BASE } from '../api'
 import './Movies.css'
 import ReviewPopup from '../popups/ReviewPopup'
 import SearchBar from '../components/SearchBar/SearchBar'
@@ -47,7 +47,7 @@ export default function Movies() {
         throw new Error('Aucun film sélectionné')
       }
 
-      const ratingRes = await fetch(`http://localhost:8080/api/v1/ratings`, {
+      const ratingRes = await fetch(`${API_BASE}/ratings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
         body: JSON.stringify({ movieId: selectedMovie.id, score: data.score }),
@@ -57,7 +57,7 @@ export default function Movies() {
         throw new Error(errBody?.message || "Erreur lors de l'envoi de la note")
       }
 
-      const reviewRes = await fetch(`http://localhost:8080/api/v1/reviews`, {
+      const reviewRes = await fetch(`${API_BASE}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
         body: JSON.stringify({ movieId: selectedMovie.id, content: data.content }),

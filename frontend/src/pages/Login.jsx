@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { login } from '../api'
+import { login, getGoogleOAuthUrl } from '../api'
 import './Auth.css'
 
 export default function Login() {
@@ -44,7 +44,7 @@ export default function Login() {
         <button
           type="button"
           onClick={() => {
-            window.location.href = 'http://localhost:8080/oauth2/authorization/google'
+            window.location.href = getGoogleOAuthUrl()
           }}
         >
           Se connecter avec Google
