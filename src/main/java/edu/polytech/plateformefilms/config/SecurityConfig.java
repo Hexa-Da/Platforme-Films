@@ -4,6 +4,7 @@ import edu.polytech.plateformefilms.security.JwtAuthenticationEntryPoint;
 import edu.polytech.plateformefilms.security.JwtAuthenticationFilter;
 import edu.polytech.plateformefilms.security.OAuth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,15 +30,18 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider;
+    private final String frontendBaseUrl;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
                           OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
-                          ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider) {
+                          ObjectProvider<ClientRegistrationRepository> clientRegistrationRepositoryProvider,
+                          @Value("${app.frontend.base-url:http://localhost:5173}") String frontendBaseUrl) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
         this.clientRegistrationRepositoryProvider = clientRegistrationRepositoryProvider;
+        this.frontendBaseUrl = frontendBaseUrl;
     }
 
     @Bean
