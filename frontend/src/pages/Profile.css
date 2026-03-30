@@ -1,0 +1,38 @@
+.profile-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-nav a {
+  color: #0066cc;
+}
+
+.profile-nav button {
+  margin-left: auto;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f8f8f8;
+}
+
+.profile-dl {
+  margin: 0;
+}
+
+.profile-dl dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.profile-dl dd {
+  margin: 0.25rem 0 0;
+}

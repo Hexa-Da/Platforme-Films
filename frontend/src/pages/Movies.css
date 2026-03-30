@@ -1,3 +1,30 @@
+.movies-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.movies-filters .search-bar-container {
+  flex: 1;
+  min-width: 200px;
+}
+
+.genre-filter-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-width: 180px;
+  font-size: 1rem;
+}
+
+.loading-hint {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
 .movies-page {
   max-width: 1200px;
   margin: 0 auto;

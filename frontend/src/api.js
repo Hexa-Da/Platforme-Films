@@ -37,8 +37,18 @@ export async function register(username, email, password) {
   return data.token;
 }
 
-export async function getMovies() {
-  const res = await fetch(`${API_BASE}/movies`, { headers: authHeaders() });
+/**
+ * @param {{ title?: string, genre?: string }} [params] — si title et genre sont renseignés, le backend priorise title
+ */
+export async function getMovies(params = {}) {
+  const search = new URLSearchParams();
+  const t = params.title?.trim();
+  const g = params.genre?.trim();
+  if (t) search.set('title', t);
+  else if (g) search.set('genre', g);
+  const qs = search.toString();
+  const url = qs ? `${API_BASE}/movies?${qs}` : `${API_BASE}/movies`;
+  const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) throw new Error('Failed to fetch movies');
   return res.json();
 }
@@ -46,6 +56,56 @@ export async function getMovies() {
 export async function getMovie(id) {
   const res = await fetch(`${API_BASE}/movies/${id}`, { headers: authHeaders() });
   if (!res.ok) throw new Error('Failed to fetch movie');
+  return res.json();
+}
+
+/** @param {{ title: string, director: string, releaseYear: number, genre: string, synopsis: string }} body */
+export async function createMovie(body) {
+  const res = await fetch(`${API_BASE}/movies`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Échec de la création du film');
+  }
+  return res.json();
+}
+
+/** @param {{ title: string, director: string, releaseYear: number, genre: string, synopsis: string }} body */
+export async function updateMovie(id, body) {
+  const res = await fetch(`${API_BASE}/movies/${id}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Échec de la mise à jour');
+  }
+  return res.json();
+}
+
+export async function deleteMovie(id) {
+  const res = await fetch(`${API_BASE}/movies/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Échec de la suppression');
+  }
+}
+
+export async function getMyProfile() {
+  const token = getToken();
+  if (!token) throw new Error('Non connecté');
+  const res = await fetch(`${API_BASE}/users/me`, {
+    headers: authHeaders(),
+  });
+  if (res.status === 401) throw new Error('Session expirée ou non autorisée');
+  if (!res.ok) throw new Error('Impossible de charger le profil');
   return res.json();
 }
 
