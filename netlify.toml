@@ -1,0 +1,17 @@
+# Build depuis le sous-dossier frontend (SPA Vite + React Router)
+[build]
+  base = "frontend"
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+# Évite un 404 sur la requête implicite du navigateur (l’icône du site est /vite.svg)
+[[redirects]]
+  from = "/favicon.ico"
+  to = "/vite.svg"
+  status = 200
+
+# SPA : toutes les routes client (/movies, /movies/1, etc.) servent index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
