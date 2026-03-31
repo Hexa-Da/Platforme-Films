@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getMovies, logout, API_BASE, getMyProfile } from '../api'
 import './Movies.css'
 import ReviewPopup from '../popups/ReviewPopup'
@@ -13,6 +13,7 @@ export default function Movies() {
   const [error, setError] = useState('')
   const [token] = useState(() => localStorage.getItem('token'))
   const [selectedMovie, setSelectedMovie] = useState(null)
+  const navigate = useNavigate()
 
   const [recherche, setRecherche] = useState('')
   const [genreFilter, setGenreFilter] = useState('')
@@ -82,20 +83,6 @@ export default function Movies() {
     return () => clearTimeout(t);
   }, [recherche, genreFilter, token]);
 
-
-  const MovieStars = ({ rating }) => {
-    const roundedRating = Math.round(rating || 0);
-    return (
-      <div className="movie-card-stars" title={`Note : ${rating?.toFixed(1) || 0}/5`}>
-        {[...Array(5)].map((_, i) => (
-          <span key={i} className={`star ${i < roundedRating ? "on" : "off"}`}>
-            &#9733;
-          </span>
-        ))}
-        {rating > 0 && <span className="rating-number">({rating.toFixed(1)})</span>}
-      </div>
-    );
-  };
 
   const sessionError = 'Session expirée ou non autorisée. Reconnectez-vous.'
 
@@ -230,8 +217,14 @@ export default function Movies() {
 
       <div className="movies-grid">
         {movies.map((movie) => (
-          <Link key={movie.id} to={`/movies/${movie.id}`} className="movie-card">
-            {/* Header de la carte : Titre + Étoiles */}
+          <div
+            key={movie.id}
+            className="movie-card"
+            role="link"
+            tabIndex={0}
+            onClick={() => navigate(`/movies/${movie.id}`)}
+            onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/movies/${movie.id}`) }}
+          >
             <div className="movie-card-header">
               <h3>{movie.title}</h3>
               <div className="movie-card-stars">
@@ -251,27 +244,24 @@ export default function Movies() {
               </div>
             </div>
 
-            {/* Infos secondaires */}
             <p>
               {movie.director} ({movie.releaseYear})
             </p>
             <p className="genre">{movie.genre}</p>
 
-            {/* Bouton Noter : visible seulement si connecté */}
             {token && (
               <button
                 type="button"
                 className="rate-button"
                 onClick={(e) => {
-                  e.preventDefault(); // Empêche la navigation vers /movies/:id
-                  e.stopPropagation(); // Empêche le Link parent de s'activer
+                  e.stopPropagation();
                   setSelectedMovie(movie);
                 }}
               >
                 {movie.hasUserFeedback ? 'Editer ma note' : 'Noter ce film'}
               </button>
             )}
-          </Link>
+          </div>
         ))}
       </div>
 

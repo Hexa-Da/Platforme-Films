@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import './ReviewPopup.css';
 
 const ReviewPopup = ({ movieTitle, initialRating = null, initialComment = '', onClose, onSubmit }) => {
@@ -12,14 +12,32 @@ const ReviewPopup = ({ movieTitle, initialRating = null, initialComment = '', on
     setHover(0);
   }, [initialRating, initialComment, movieTitle]);
 
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
   const handleSubmit = () => {
-    // On renvoie les données au parent qui fera l'appel API
     onSubmit({ score: rating, content: comment });
   };
 
   return (
-    <div className="popup-overlay">
-      <div className="popup-content">
+    <div
+      className="popup-overlay"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="popup-content"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Critique de ${movieTitle}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
           className="close-btn"
@@ -31,9 +49,8 @@ const ReviewPopup = ({ movieTitle, initialRating = null, initialComment = '', on
 
         <h2 className="popup-title">Votre critique de : <span>{movieTitle}</span></h2>
 
-        {/* Système d'étoiles */}
-        <div className="star-rating">
-          {[...Array(5)].map((star, index) => {
+        <div className="star-rating" role="radiogroup" aria-label="Note sur 5">
+          {[...Array(5)].map((_, index) => {
             const ratingValue = index + 1;
             return (
               <button
@@ -43,6 +60,7 @@ const ReviewPopup = ({ movieTitle, initialRating = null, initialComment = '', on
                 onClick={() => setRating(ratingValue)}
                 onMouseEnter={() => setHover(ratingValue)}
                 onMouseLeave={() => setHover(0)}
+                aria-label={`${ratingValue} étoile${ratingValue > 1 ? 's' : ''}`}
               >
                 <span className="star">&#9733;</span>
               </button>
@@ -50,7 +68,9 @@ const ReviewPopup = ({ movieTitle, initialRating = null, initialComment = '', on
           })}
         </div>
 
+        <label htmlFor="review-comment" className="sr-only">Votre critique</label>
         <textarea
+          id="review-comment"
           placeholder="Écrivez votre critique ici..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
