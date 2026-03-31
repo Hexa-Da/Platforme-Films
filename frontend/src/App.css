@@ -12,38 +12,21 @@ body {
   color: red;
 }
 
-/* Supprimer, déconnexion : texte blanc sur fond rouge */
+/* Supprimer, déconnexion : même style que les autres boutons (texte bleu, fond transparent) */
 button.btn-danger {
-  background: #c62828;
-  color: #fff;
-  border: 1px solid #b71c1c;
+  background: transparent;
+  color: #0066cc;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
 }
 
 button.btn-danger:hover {
-  background: #b71c1c;
-  border-color: #8b0000;
-  color: #fff;
-}
-
-.movies-page nav button.btn-danger {
-  color: #fff;
-  background: #c62828;
-  border: 1px solid #b71c1c;
+  color: #0052a3;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .movies-page nav button.btn-danger:hover {
-  background: #b71c1c;
-  text-decoration: none;
-}
-
-.profile-nav button.btn-danger {
-  color: #fff;
-  background: #c62828;
-  border-color: #b71c1c;
-}
-
-.profile-nav button.btn-danger:hover {
-  background: #b71c1c;
+  text-decoration: underline;
 }

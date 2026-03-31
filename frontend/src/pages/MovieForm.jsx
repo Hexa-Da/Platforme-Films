@@ -99,9 +99,6 @@ export default function MovieForm() {
     <div className="movie-form-page">
       <nav className="movie-form-nav">
         <Link to="/movies">← Films</Link>
-        {isEdit && (
-          <Link to={`/movies/${id}`}>Voir le film</Link>
-        )}
       </nav>
 
       <h1>{isEdit ? 'Modifier le film' : 'Nouveau film'}</h1>

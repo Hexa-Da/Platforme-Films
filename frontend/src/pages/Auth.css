@@ -29,10 +29,6 @@
   font-size: 1rem;
 }
 
-.auth-page button:hover {
-  background: #555;
-}
-
 .auth-page .error {
   color: red;
 }

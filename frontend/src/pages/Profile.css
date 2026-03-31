@@ -19,9 +19,16 @@
   margin-left: auto;
   padding: 0.35rem 0.75rem;
   cursor: pointer;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 6px;
-  background: #f8f8f8;
+  background: transparent;
+  color: #0066cc;
+}
+
+.profile-nav button:hover {
+  color: #0052a3;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .profile-dl {

@@ -12,6 +12,14 @@
 
 .movie-form-nav a {
   color: #0066cc;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.movie-form-nav a:hover {
+  color: #0052a3;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .movie-form {
@@ -47,15 +55,32 @@
   cursor: pointer;
   border-radius: 6px;
   border: none;
-  background: #0066cc;
-  color: #fff;
+  background: transparent;
+  color: #0066cc;
 }
 
 .movie-form-actions button:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
+  color: #0066cc;
   cursor: not-allowed;
 }
 
 .movie-form-actions a {
   color: #0066cc;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.movie-form-actions a:hover {
+  color: #0052a3;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Tous les boutons de la page formulaire */
+.movie-form-page button:hover:not(:disabled) {
+  color: #0052a3;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

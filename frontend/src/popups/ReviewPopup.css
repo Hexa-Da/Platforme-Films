@@ -8,6 +8,9 @@
 }
 
 .popup-content {
+  --pf-blue: #0066cc;
+  --pf-blue-hover: #0052a3;
+
   background: #1a1a1a;
   color: white;
   padding: 30px;
@@ -18,23 +21,51 @@
 }
 
 .popup-title span {
-  color: #f39c12;
+  color: var(--pf-blue);
 }
 
 .star-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
   margin: 20px 0;
+  line-height: 0;
 }
 
 .star-rating button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
   background: transparent;
   border: none;
   outline: none;
   cursor: pointer;
-  font-size: 35px;
+  font-size: inherit;
+  line-height: 1;
+  vertical-align: middle;
 }
 
-.on { color: #f39c12; }
-.off { color: #555; }
+.star-rating button:hover,
+.star-rating button:focus-visible {
+  text-decoration: none !important;
+}
+
+.star-rating .star {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.star-rating button.on .star {
+  color: #f39c12;
+}
+
+.star-rating button.off .star {
+  color: #555;
+}
 
 textarea {
   width: 100%;
@@ -50,22 +81,49 @@ textarea {
 
 .submit-btn {
   margin-top: 20px;
-  background: #f39c12;
+  background: transparent;
+  color: var(--pf-blue);
   border: none;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+}
+
+.submit-btn:hover:not(:disabled) {
+  color: var(--pf-blue-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .submit-btn:disabled {
-  background: #555;
+  background: transparent;
+  color: var(--pf-blue);
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.close-btn {
+.popup-content button.close-btn {
   position: absolute;
-  top: 10px; right: 10px;
-  background: none; border: none;
-  color: white; font-size: 24px; cursor: pointer;
+  top: 10px;
+  right: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 400;
+  cursor: pointer;
+  line-height: 1;
+  text-decoration: none;
+  transition: none;
+}
+
+.popup-content button.close-btn:hover,
+.popup-content button.close-btn:focus,
+.popup-content button.close-btn:focus-visible,
+.popup-content button.close-btn:active {
+  color: #fff !important;
+  text-decoration: none !important;
+  outline: none;
 }

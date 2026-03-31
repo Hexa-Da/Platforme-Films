@@ -14,7 +14,14 @@ const ReviewPopup = ({ movieTitle, onClose, onSubmit }) => {
   return (
     <div className="popup-overlay">
       <div className="popup-content">
-        <button className="close-btn" onClick={onClose}>×</button>
+        <button
+          type="button"
+          className="close-btn"
+          onClick={onClose}
+          aria-label="Fermer"
+        >
+          ×
+        </button>
 
         <h2 className="popup-title">Votre critique de : <span>{movieTitle}</span></h2>
 
