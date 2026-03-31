@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { deleteMovie, getMovie, getReviewsByMovie, getAverageRating } from '../api'
+import StarRating from '../components/StarRating'
 import './MovieDetail.css'
 
 function formatDate(dateStr) {
@@ -53,8 +54,6 @@ export default function MovieDetail() {
   if (error) return <p className="error movie-detail">Erreur: {error}</p>
   if (!movie) return <p className="movie-detail">Film non trouvé</p>
 
-  const roundedRating = Math.round(averageRating || 0)
-
   return (
     <div className="movie-detail">
       <nav className="movie-detail-nav">
@@ -67,14 +66,15 @@ export default function MovieDetail() {
           {movie.director} · {movie.releaseYear} · {movie.genre}
         </p>
 
-        <div className="movie-rating">
-          <div className="movie-rating-stars">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className={`star ${i < roundedRating ? 'on' : 'off'}`}>
-                &#9733;
-              </span>
-            ))}
-          </div>
+        <div
+          className="movie-rating"
+          aria-label={
+            averageRating > 0
+              ? `Note moyenne ${averageRating.toFixed(1)} sur 5`
+              : 'Pas encore de note'
+          }
+        >
+          <StarRating rating={averageRating} size="lg" />
           {averageRating > 0 ? (
             <span className="movie-rating-value">{averageRating.toFixed(1)} / 5</span>
           ) : (

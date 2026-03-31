@@ -4,6 +4,7 @@ import { getMovies, logout, API_BASE, getMyProfile } from '../api'
 import './Movies.css'
 import ReviewPopup from '../popups/ReviewPopup'
 import SearchBar from '../components/SearchBar/SearchBar'
+import StarRating from '../components/StarRating'
 
 const DEBOUNCE_MS = 350
 
@@ -44,23 +45,24 @@ export default function Movies() {
           const enrichedMovies = await Promise.all(
             moviesList.map(async (movie) => {
               try {
-                const [avgRes, ratingsRes, reviewsRes] = await Promise.all([
+                const [avgRes, reviewsRes, ratingsRes] = await Promise.all([
                   fetch(`${API_BASE}/movies/${movie.id}/ratings/average`),
+                  fetch(`${API_BASE}/movies/${movie.id}/reviews`),
                   username ? fetch(`${API_BASE}/movies/${movie.id}/ratings`) : Promise.resolve(null),
-                  username ? fetch(`${API_BASE}/movies/${movie.id}/reviews`) : Promise.resolve(null),
                 ])
 
                 const avg = avgRes.ok ? await avgRes.json() : 0
+                const reviewsJson = reviewsRes.ok ? await reviewsRes.json() : []
+                const allReviews = Array.isArray(reviewsJson) ? reviewsJson : []
+                const reviewCount = allReviews.length
+
                 let hasUserFeedback = false
                 let userRating = null
                 let userReviewContent = ''
-                if (username && ratingsRes?.ok && reviewsRes?.ok) {
-                  const [ratings, reviews] = await Promise.all([
-                    ratingsRes.json(),
-                    reviewsRes.json(),
-                  ])
+                if (username && ratingsRes?.ok) {
+                  const ratings = await ratingsRes.json()
                   const userRatingEntry = Array.isArray(ratings) ? ratings.find((r) => r.username === username) : null
-                  const userReviewEntry = Array.isArray(reviews) ? reviews.find((r) => r.username === username) : null
+                  const userReviewEntry = allReviews.find((r) => r.username === username)
                   const hasUserRating = Boolean(userRatingEntry)
                   const hasUserReview = Boolean(userReviewEntry)
                   hasUserFeedback = hasUserRating || hasUserReview
@@ -68,9 +70,23 @@ export default function Movies() {
                   userReviewContent = userReviewEntry?.content ?? ''
                 }
 
-                return { ...movie, averageRating: avg, hasUserFeedback, userRating, userReviewContent };
+                return {
+                  ...movie,
+                  averageRating: avg,
+                  reviewCount,
+                  hasUserFeedback,
+                  userRating,
+                  userReviewContent,
+                }
               } catch {
-                return { ...movie, averageRating: 0, hasUserFeedback: false, userRating: null, userReviewContent: '' };
+                return {
+                  ...movie,
+                  averageRating: 0,
+                  reviewCount: 0,
+                  hasUserFeedback: false,
+                  userRating: null,
+                  userReviewContent: '',
+                }
               }
             })
           );
@@ -227,19 +243,31 @@ export default function Movies() {
           >
             <div className="movie-card-header">
               <h3>{movie.title}</h3>
-              <div className="movie-card-stars">
-                {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={`star ${(movie.averageRating || 0) >= i + 1 ? 'on' : 'off'}`}
+              <div className="movie-card-rating-block">
+                <StarRating rating={movie.averageRating || 0} size="sm" />
+                {((movie.averageRating || 0) > 0 || (movie.reviewCount ?? 0) > 0) && (
+                  <div
+                    className="movie-card-stats-line"
+                    title={
+                      (movie.averageRating || 0) > 0 && (movie.reviewCount ?? 0) > 0
+                        ? `Note moyenne ${movie.averageRating.toFixed(1)}/5, ${movie.reviewCount} avis`
+                        : (movie.averageRating || 0) > 0
+                          ? `Note moyenne ${movie.averageRating.toFixed(1)}/5`
+                          : `${movie.reviewCount} avis`
+                    }
                   >
-                    &#9733;
-                  </span>
-                ))}
-                {movie.averageRating > 0 && (
-                  <span className="rating-number">
-                    ({movie.averageRating.toFixed(1)})
-                  </span>
+                    {(movie.averageRating || 0) > 0 && (
+                      <span className="stat-note">{movie.averageRating.toFixed(1)}/5</span>
+                    )}
+                    {(movie.averageRating || 0) > 0 && (movie.reviewCount ?? 0) > 0 && (
+                      <span className="stat-sep" aria-hidden>
+                        ·
+                      </span>
+                    )}
+                    {(movie.reviewCount ?? 0) > 0 && (
+                      <span className="stat-count">{movie.reviewCount} avis</span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

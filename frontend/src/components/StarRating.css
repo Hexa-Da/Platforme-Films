@@ -1,0 +1,42 @@
+.star-rating-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+.star-partial {
+  position: relative;
+  display: inline-flex;
+  line-height: 1;
+  /* Contour léger pour mieux distinguer les étoiles sur fond clair */
+  filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.12));
+}
+
+.star-partial-bg {
+  color: #b8b8b8;
+}
+
+.star-partial-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  color: #e67e22;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Cartes liste : un peu plus grand qu’avant */
+.star-rating--sm .star-partial {
+  font-size: 1.12rem;
+}
+
+.star-rating--md .star-partial {
+  font-size: 1.2rem;
+}
+
+/* Fiche film : étoiles bien visibles */
+.star-rating--lg .star-partial {
+  font-size: 1.55rem;
+}

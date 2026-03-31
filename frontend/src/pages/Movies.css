@@ -114,19 +114,36 @@
   gap: 10px;
 }
 
-.movie-card-stars {
+.movie-card-rating-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+/* Ligne sous les étoiles : note /5 · nombre d’avis */
+.movie-card-stats-line {
   display: flex;
   align-items: center;
-  gap: 2px;
-  color: #ccc; /* Couleur des étoiles vides */
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
 }
 
-.movie-card-stars .star.on {
-  color: #f39c12; /* Orange pour les étoiles pleines */
+.movie-card-stats-line .stat-note {
+  font-variant-numeric: tabular-nums;
+  color: #444;
+  font-weight: 600;
 }
 
-.rating-number {
-  font-size: 0.75rem;
-  color: #888;
-  margin-left: 4px;
+.movie-card-stats-line .stat-sep {
+  color: #bbb;
+  user-select: none;
+}
+
+.movie-card-stats-line .stat-count {
+  color: #666;
+  font-weight: 500;
 }
