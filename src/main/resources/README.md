@@ -14,7 +14,7 @@ Ce dossier contient la configuration et les assets statiques servis par le backe
 
 ### Détails par profil
 
-- **dev** : `jdbc:h2:mem://localhost:3306/movies_db`, `ddl-auto=create-drop` — base recréée à chaque démarrage
+- **dev** : `jdbc:h2:mem:movies_db`, `ddl-auto=create-drop` — base recréée à chaque démarrage
 - **test** : `jdbc:h2:mem:testdb`, `ddl-auto=create-drop` — base isolée pour les tests
 - **prod** : MySQL via variables d'environnement (`SPRING_DATASOURCE_*`), `ddl-auto=update` — données persistées
 

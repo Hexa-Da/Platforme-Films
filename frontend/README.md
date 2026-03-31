@@ -1,16 +1,50 @@
-# React + Vite
+# Frontend — Plateforme de films
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Application React (v19) avec Vite (v7) pour la plateforme de films.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19** — framework UI
+- **Vite 7** — bundler / dev server
+- **react-router-dom 7** — routage SPA
 
-## React Compiler
+## Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Route | Composant | Description |
+|-------|-----------|-------------|
+| `/movies` | `Movies.jsx` | Liste des films avec recherche, filtres, notes moyennes |
+| `/movies/:id` | `MovieDetail.jsx` | Détail d'un film, critiques, notes |
+| `/movies/new` | `MovieForm.jsx` | Formulaire d'ajout de film |
+| `/login` | `Login.jsx` | Connexion (JWT) |
+| `/register` | `Register.jsx` | Inscription |
+| `/profile` | `Profile.jsx` | Profil utilisateur |
+| `/oauth2/callback` | `OAuth2Callback.jsx` | Callback OAuth2 Google |
 
-## Expanding the ESLint configuration
+## Composants notables
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `ReviewPopup` — Popup modale accessible (Escape, click overlay) pour noter et commenter un film
+- `SearchBar` — Barre de recherche avec debounce
+
+## Lancement
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Le serveur de dev tourne sur `http://localhost:5173` et communique avec le backend sur `http://localhost:8080/api/v1`.
+
+## Variables d'environnement
+
+| Variable | Description | Défaut |
+|----------|-------------|--------|
+| `VITE_API_BASE` | URL de base de l'API | `http://localhost:8080/api/v1` (dev) |
+
+## Build production
+
+```bash
+npm run build
+```
+
+Les fichiers statiques sont générés dans `dist/`. Le fichier `public/_redirects` configure les SPA rewrites pour Netlify.
