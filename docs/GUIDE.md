@@ -89,13 +89,13 @@ curl http://localhost:8080/api/v1/movies/1
 
 ### Endpoints protégés
 
-Pour les futurs endpoints protégés, ajouter le header :
+Critiques, notes, profils utilisateur (`/users/me`, `/users/{id}`), etc. exigent un JWT. Exemple :
 
-```
-Authorization: Bearer <votre_token>
+```bash
+curl -H "Authorization: Bearer <votre_token>" http://localhost:8080/api/v1/users/me
 ```
 
-Voir `docs/API.md` pour le contrat complet.
+Voir `docs/API.md` pour la liste complète et les corps de requête.
 
 ---
 
@@ -105,9 +105,13 @@ Voir `docs/API.md` pour le contrat complet.
 |-------|-------------|
 | `/` | Redirection vers `/movies` |
 | `/movies` | Liste des films |
+| `/movies/new` | Ajout d'un film |
 | `/movies/:id` | Détail d'un film |
+| `/movies/:id/edit` | Modification d'un film |
+| `/profile` | Profil utilisateur |
 | `/login` | Connexion |
 | `/register` | Inscription |
+| `/oauth2/callback` | Retour OAuth2 Google (récupération du JWT) |
 
 Le token est conservé entre les sessions (localStorage). Pour se déconnecter : appel à `logout()` (suppression du token).
 
@@ -118,13 +122,13 @@ Le token est conservé entre les sessions (localStorage). Pour se déconnecter :
 Lance l'API avec MySQL :
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 - **API** : http://localhost:8080
 - **MySQL** : port 3306
 
-Le profil `prod` est activé automatiquement. Les variables de connexion sont définies dans `docker-compose.yml`.
+Le profil `prod` est activé automatiquement. Les variables sont lues depuis `.env` (voir `.env.example` et `docs/DOCKER.md`).
 
 ---
 
@@ -140,8 +144,9 @@ Le profil `prod` est activé automatiquement. Les variables de connexion sont d�
 | `GOOGLE_CLIENT_ID` | Client ID OAuth2 Google | — |
 | `GOOGLE_CLIENT_SECRET` | Client secret OAuth2 Google | — |
 | `FRONTEND_BASE_URL` | URL du frontend utilisée pour les redirections OAuth2 | `http://localhost:5173` |
+| `SPRING_DATABASE` | Nom de la base MySQL (Docker) | — |
 
-En développement, ces variables doivent être fournies directement dans l'environnement (ex. `export GOOGLE_CLIENT_ID=...` avant `mvn spring-boot:run`).
+En développement, ces variables doivent être fournies directement dans l'environnement (ex. `export GOOGLE_CLIENT_ID=...` avant `mvnw spring-boot:run`).
 En production avec docker-compose le fichier `.env` à la racine s'en occupe.
 
 ---
@@ -159,5 +164,6 @@ Utilise le profil `test` (H2 en mémoire).
 ## Documentation associée
 
 - `docs/API.md` — Contrat API et format des DTOs
+- `docs/AUTH.md` — Flux JWT et OAuth2 (fichiers impliqués)
 - `docs/GIT.md` — Workflow Git et conventions
 - `docs/PLAN.md` — Plan du projet et répartition des tâches

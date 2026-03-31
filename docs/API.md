@@ -43,6 +43,18 @@ Authorization: Bearer <token>
 | Méthode | Endpoint | Auth | Description |
 |---------|----------|------|-------------|
 | GET | `/users/me` | Oui (JWT) | Profil de l'utilisateur connecté |
+| GET | `/users/{id}` | Oui (JWT) | Infos publiques d'un utilisateur par id (404 si absent) |
+
+**UserResponse** (réponse) :
+
+```json
+{
+  "id": "number",
+  "username": "string",
+  "email": "string",
+  "createdAt": "string (ISO-8601)"
+}
+```
 
 ### Movies
 

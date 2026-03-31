@@ -15,6 +15,7 @@ Application React (v19) avec Vite (v7) pour la plateforme de films.
 | `/movies` | `Movies.jsx` | Liste des films avec recherche, filtres, notes moyennes |
 | `/movies/:id` | `MovieDetail.jsx` | Détail d'un film, critiques, notes |
 | `/movies/new` | `MovieForm.jsx` | Formulaire d'ajout de film |
+| `/movies/:id/edit` | `MovieForm.jsx` | Formulaire de modification de film |
 | `/login` | `Login.jsx` | Connexion (JWT) |
 | `/register` | `Register.jsx` | Inscription |
 | `/profile` | `Profile.jsx` | Profil utilisateur |

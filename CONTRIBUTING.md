@@ -41,5 +41,6 @@
 
 - `docs/PLAN.md` — Plan complet avec les tâches détaillées de chaque junior
 - `docs/API.md` — Contrat API (endpoints, DTOs, exemples)
+- `docs/AUTH.md` — Flux d'authentification (JWT, OAuth2)
 - `docs/GIT.md` — Commandes Git et workflow
 - `docs/GUIDE.md` — Guide d'installation et d'utilisation

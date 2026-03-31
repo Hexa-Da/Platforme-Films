@@ -4,10 +4,10 @@
   command = "npm ci && npm run build"
   publish = "dist"
 
-# Évite un 404 sur la requête implicite du navigateur (l’icône du site est /vite.svg)
+# Évite un 404 sur la requête implicite du navigateur (icône /favicon.png)
 [[redirects]]
   from = "/favicon.ico"
-  to = "/vite.svg"
+  to = "/favicon.png"
   status = 200
 
 # SPA : toutes les routes client (/movies, /movies/1, etc.) servent index.html

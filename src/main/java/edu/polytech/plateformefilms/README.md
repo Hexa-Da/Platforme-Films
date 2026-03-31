@@ -23,7 +23,7 @@ Contrôleurs REST.
 | `MovieController` | CRUD films : GET, POST, PUT, DELETE `/movies` |
 | `ReviewController` | Critiques : GET, POST, PUT, DELETE `/movies/{id}/reviews` |
 | `RatingController` | Notes : GET, POST, PUT `/movies/{id}/ratings` |
-| `UserController` | Profil : `GET /users/me` |
+| `UserController` | Profils : `GET /users/me`, `GET /users/{id}` |
 | `HtmlController` | Pages web : `/`, `/index.html` → Thymeleaf |
 
 ## `dto/`

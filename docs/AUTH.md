@@ -87,16 +87,16 @@ Cette URL est geree automatiquement par Spring. Le framework echange ce code con
 
 C'est le coeur du pont entre OAuth2 et notre systeme JWT :
 
-Ce qui se passe ligne par ligne :
+Ce qui se passe dans le handler :
 1. On recupere l'email et le sub (identifiant unique Google) depuis les attributs OAuth2.
 2. On choisit le username : l'email si disponible, sinon `google_<sub>`.
-3. On retrouve ou cree le user dans notre base (etape suivante).
+3. On appelle `UserService.findOrCreateOAuth2User(...)` pour retrouver ou creer le compte interne (voir ci-dessous).
 4. On genere un JWT **avec `JwtUtil`**, exactement le meme que pour un login classique.
-5. On redirige le navigateur vers le frontend avec le JWT dans la query string.
+5. On redirige le navigateur vers le frontend avec le JWT dans le **fragment** de l'URL (`#token=...`), pas en query string : le token n'est pas envoye au serveur dans la requete HTTP GET vers le frontend, seulement interprete cote client.
 
 ### Etape 5 : creation ou rattachement du compte interne
 
-**Fichier** : `service/UserService.java`
+**Fichier** : `service/UserService.java` (appele depuis le success handler avant la redirection)
 
 - Si un compte avec cet email existe deja en base (meme cree par inscription classique), on le reutilise. Pas de doublon.
 - Sinon, on cree un nouveau compte avec un password placeholder (hash BCrypt de `"oauth2-google"`). L'utilisateur ne pourra pas se connecter avec ce password en classique, mais ce n'est pas grave : il passera toujours par Google.
@@ -105,7 +105,7 @@ Ce qui se passe ligne par ligne :
 
 **Fichier** : `frontend/src/pages/OAuth2Callback.jsx`
 
-Le navigateur arrive sur `/oauth2/callback?token=eyJ...`. Le composant lit le token dans l'URL, le stocke dans `localStorage`, et redirige vers `/movies`.
+Le navigateur arrive sur `/oauth2/callback#token=eyJ...`. Le composant lit le token dans `location.hash` (ou `location.search` en secours), le stocke dans `localStorage`, et redirige vers `/movies`.
 
 A partir de la, le frontend fonctionne exactement comme apres un login classique.
 
@@ -166,7 +166,7 @@ Il n'y a rien cote serveur : le backend est stateless. Supprimer le token du `lo
 | `frontend/src/pages/Register.jsx` | Formulaire inscription classique |
 | `frontend/src/pages/OAuth2Callback.jsx` | Recoit le JWT apres login Google |
 | `frontend/src/api.js` | Fonctions `login()`, `register()`, `authHeaders()`, `logout()` |
-| `frontend/src/App.jsx` | Declaration des routes (`/login`, `/register`, `/oauth2/callback`) |
+| `frontend/src/App.jsx` | Declaration des routes (`/login`, `/register`, `/oauth2/callback`, `/profile`, etc.) |
 | `controller/AuthController.java` | `POST /auth/register` et `POST /auth/login` |
 | `service/UserService.java` | `register()`, `findByUsername()`, `findOrCreateOAuth2User()` |
 | `security/JwtUtil.java` | `generateToken()`, `validateToken()`, `extractUsername()` |

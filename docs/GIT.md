@@ -11,9 +11,9 @@ LOCAL
 REMOTE origin 
 ├── main                      # Branche principale (release)
 ├── dev                       # Intégration des features
-├── feature/reviews-ratings   # Junior 1 - Services + DTOs
-├── feature/api-swagger       # Junior 2 - API + Swagger + OAuth2
-└── feature/front-tests       # Junior 3 - Front React + Tests + MySQL
+├── feature/reviews-ratings   # Junior 1 - Backend Reviews & Ratings
+├── feature/movies-crud-users # Junior 2 - Backend Movies CRUD & Users
+└── feature/front-pages       # Junior 3 - Frontend React
 ```
 
 ## Commandes essentielles

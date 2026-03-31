@@ -105,7 +105,7 @@ export default function MovieDetail() {
               {reviews.map((review) => (
                 <li key={review.id} className="review-card">
                   <div className="review-meta">
-                    <span className="review-author">@{review.username}</span>
+                    <span className="review-author">{review.username}</span>
                     {review.createdAt && (
                       <time className="review-date" dateTime={review.createdAt}>
                         {formatDate(review.createdAt)}

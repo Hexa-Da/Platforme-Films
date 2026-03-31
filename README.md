@@ -39,7 +39,7 @@ Le frontend démarre sur http://localhost:5173
 ## Docker
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 L'API sera disponible sur http://localhost:8080 avec MySQL sur le port 3306.
@@ -49,6 +49,7 @@ L'API sera disponible sur http://localhost:8080 avec MySQL sur le port 3306.
 - `SPRING_PROFILES_ACTIVE` : `dev` (H2), `test` (H2), `prod` (MySQL)
 - `JWT_SECRET` : secret pour signer les tokens (prod)
 - `SPRING_DATASOURCE_URL` : URL JDBC MySQL (prod)
+- Voir `.env.example` et `docs/DOCKER.md` pour Docker (MySQL, OAuth2, JWT).
 
 ## Structure
 
@@ -56,3 +57,4 @@ L'API sera disponible sur http://localhost:8080 avec MySQL sur le port 3306.
 - `frontend/` : Application React (Vite)
 - `docs/API.md` : Contrat API
 - `docs/GUIDE.md` : Guide d'utilisation détaillé
+- `docs/AUTH.md` : Authentification JWT et OAuth2
