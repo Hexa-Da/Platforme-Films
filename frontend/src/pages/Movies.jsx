@@ -67,16 +67,39 @@ export default function Movies() {
     );
   };
 
+  const sessionError = 'Session expirée ou non autorisée. Reconnectez-vous.'
+
+  const parseError = async (res, fallbackMessage) => {
+    const errBody = await res.json().catch(() => null)
+    if (res.status === 401 || res.status === 403) {
+      return sessionError
+    }
+    return errBody?.message || fallbackMessage
+  }
+
+  const authFetch = async (url, options = {}) => {
+    const tok = localStorage.getItem('token')
+    if (!tok) {
+      throw new Error(sessionError)
+    }
+    return fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tok}`,
+        ...(options.headers || {}),
+      },
+    })
+  }
+
   const handleReviewSubmit = async (data) => {
     try {
-      const tok = localStorage.getItem('token')
       if (!selectedMovie) {
         throw new Error('Aucun film sélectionné')
       }
 
-      const ratingRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/ratings`, {
+      const ratingRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/ratings`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
         body: JSON.stringify({ score: data.score }),
       })
       if (ratingRes.status === 409) {
@@ -92,23 +115,19 @@ export default function Movies() {
         if (!existingRating?.id) {
           throw new Error("Note existante introuvable pour édition")
         }
-        const updateRatingRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/ratings/${existingRating.id}`, {
+        const updateRatingRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/ratings/${existingRating.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
           body: JSON.stringify({ score: data.score }),
         })
         if (!updateRatingRes.ok) {
-          const errBody = await updateRatingRes.json().catch(() => null)
-          throw new Error(errBody?.message || "Erreur lors de la mise à jour de la note")
+          throw new Error(await parseError(updateRatingRes, "Erreur lors de la mise à jour de la note"))
         }
       } else if (!ratingRes.ok) {
-        const errBody = await ratingRes.json().catch(() => null)
-        throw new Error(errBody?.message || "Erreur lors de l'envoi de la note")
+        throw new Error(await parseError(ratingRes, "Erreur lors de l'envoi de la note"))
       }
 
-      const reviewRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/reviews`, {
+      const reviewRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/reviews`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
         body: JSON.stringify({ content: data.content }),
       })
       if (reviewRes.status === 409) {
@@ -124,18 +143,15 @@ export default function Movies() {
         if (!existingReview?.id) {
           throw new Error("Critique existante introuvable pour édition")
         }
-        const updateRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/reviews/${existingReview.id}`, {
+        const updateRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/reviews/${existingReview.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
           body: JSON.stringify({ content: data.content }),
         })
         if (!updateRes.ok) {
-          const errBody = await updateRes.json().catch(() => null)
-          throw new Error(errBody?.message || "Erreur lors de la mise à jour de la critique")
+          throw new Error(await parseError(updateRes, "Erreur lors de la mise à jour de la critique"))
         }
       } else if (!reviewRes.ok) {
-        const errBody = await reviewRes.json().catch(() => null)
-        throw new Error(errBody?.message || "Erreur lors de l'envoi de la critique")
+        throw new Error(await parseError(reviewRes, "Erreur lors de l'envoi de la critique"))
       }
 
       alert('Avis enregistré !')

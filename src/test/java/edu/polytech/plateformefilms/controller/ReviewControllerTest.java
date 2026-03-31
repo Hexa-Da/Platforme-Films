@@ -260,4 +260,16 @@ class ReviewControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void updateReview_WhenUserNotFound_ShouldReturn401() throws Exception {
+        ReviewRequest request = new ReviewRequest("Texte modifié");
+        when(userService.findByUsername("bob")).thenReturn(null);
+
+        mockMvc.perform(put("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
 }

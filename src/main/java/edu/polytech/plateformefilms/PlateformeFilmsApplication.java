@@ -17,6 +17,9 @@ public class PlateformeFilmsApplication {
     @Bean
     CommandLineRunner dataLoader(MovieRepo movieRepo) {
         return args -> {
+            if (movieRepo.count() > 0) {
+                return;
+            }
             movieRepo.save(new Movie("Inception", "Christopher Nolan", 2010, "Sci-Fi", "A thief who steals corporate secrets through dream-sharing technology."));
             movieRepo.save(new Movie("Parasite", "Bong Joon-ho", 2019, "Thriller", "A poor family schemes to become employed by a wealthy family."));
             movieRepo.save(new Movie("The Dark Knight", "Christopher Nolan", 2008, "Action", "Batman must accept one of the greatest psychological tests."));
