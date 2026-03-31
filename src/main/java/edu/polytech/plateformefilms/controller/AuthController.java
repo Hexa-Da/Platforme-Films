@@ -6,6 +6,7 @@ import edu.polytech.plateformefilms.dto.RegisterRequest;
 import edu.polytech.plateformefilms.model.User;
 import edu.polytech.plateformefilms.security.JwtUtil;
 import edu.polytech.plateformefilms.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         User user = new User(request.username(), request.email(), request.password());
         user = userService.register(user);
         String token = jwtUtil.generateToken(user.getUsername());
@@ -35,7 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         String token = jwtUtil.generateToken(auth.getName());
