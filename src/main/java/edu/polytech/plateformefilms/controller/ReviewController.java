@@ -11,13 +11,13 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/reviews")
+@RequestMapping("/api/v1/movies")
 @CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Reviews", description = "Gestion des critiques de films")
 public class ReviewController {
@@ -31,19 +31,20 @@ public class ReviewController {
     }
 
     // Création d'un avis
-    @PostMapping
+    @PostMapping("/{id}/reviews")
     @Operation(summary = "Créer une nouvelle critique", description = "Permet à un utilisateur de poster un avis sur un film.")
     public ResponseEntity<ReviewResponse> createReview(
+            @PathVariable Long id,
             @Valid @RequestBody ReviewRequest request,
-            @AuthenticationPrincipal(expression = "username") String username
+            Authentication authentication
     ) {
-        var user = userService.findByUsername(username);
+        var user = userService.findByUsername(authentication.getName());
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
         }
 
         Review newReview = reviewService.createReview(
-                request.movieId(),
+                id,
                 user.getId(),
                 request.content()
         );
@@ -51,10 +52,10 @@ public class ReviewController {
         return new ResponseEntity<>(convertToDto(newReview), HttpStatus.CREATED);
     }
 
-    @GetMapping("/movie/{movieId}")
+    @GetMapping("/{id}/reviews")
     @Operation(summary = "Lister les critiques d'un film", description = "Récupère tous les avis postés pour un ID de film donné.")
-    public ResponseEntity<List<ReviewResponse>> getReviewsByMovie(@PathVariable Long movieId) {
-        List<Review> reviews = reviewService.getReviewsByMovie(movieId);
+    public ResponseEntity<List<ReviewResponse>> getReviewsByMovie(@PathVariable Long id) {
+        List<Review> reviews = reviewService.getReviewsByMovie(id);
 
         // On transforme la liste d'entités en liste de DTOs
         List<ReviewResponse> response = reviews.stream()
@@ -75,18 +76,18 @@ public class ReviewController {
     }
 
     @Operation(summary = "Supprimer une critique", description = "Supprime un avis. Seul l'auteur peut effectuer cette action.")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/reviews/{reviewId}")
     public ResponseEntity<Void> deleteReview(
-            @PathVariable Long id,
-            @AuthenticationPrincipal(expression = "username") String username
+            @PathVariable Long reviewId,
+            org.springframework.security.core.Authentication authentication
     ) {
-        var user = userService.findByUsername(username);
+        var user = userService.findByUsername(authentication.getName());
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
         }
 
         try {
-            reviewService.deleteReview(id, user.getId());
+            reviewService.deleteReview(reviewId, user.getId());
         } catch (RuntimeException e) {
             String msg = e.getMessage() == null ? "" : e.getMessage();
             if (msg.contains("Interdit")) {

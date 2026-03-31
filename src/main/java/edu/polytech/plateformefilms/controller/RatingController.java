@@ -11,13 +11,13 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/ratings")
+@RequestMapping("/api/v1/movies")
 @CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Ratings", description = "Gestion des notes (1 à 5)")
 public class RatingController {
@@ -31,13 +31,14 @@ public class RatingController {
     }
 
     // Noter un film
-    @PostMapping
+    @PostMapping("/{id}/ratings")
     @Operation(summary = "Noter un film", description = "Ajoute une note ou met à jour la note existante de l'utilisateur pour ce film.")
     public ResponseEntity<RatingResponse> rateMovie(
+            @PathVariable Long id,
             @Valid @RequestBody RatingRequest request,
-            @AuthenticationPrincipal(expression = "username") String username
+            Authentication authentication
     ) {
-        var user = userService.findByUsername(username);
+        var user = userService.findByUsername(authentication.getName());
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
         }
@@ -45,7 +46,7 @@ public class RatingController {
         // Le service gère si c'est une création ou une mise à jour
         Rating rating;
         try {
-            rating = ratingService.rateMovie(request.movieId(), user.getId(), request.score());
+            rating = ratingService.rateMovie(id, user.getId(), request.score());
         } catch (RuntimeException e) {
             String msg = e.getMessage() == null ? "" : e.getMessage();
             if (msg.contains("Film non trouvé")) {
@@ -61,17 +62,17 @@ public class RatingController {
     }
 
     // Récupérer la note moyenne d'un film
-    @GetMapping("/movie/{movieId}/average")
+    @GetMapping("/{id}/ratings/average")
     @Operation(summary = "Voir la moyenne d'un film", description = "Calcule la note moyenne (Double) à partir de tous les avis.")
-    public ResponseEntity<Double> getAverageRating(@PathVariable Long movieId) {
-        return ResponseEntity.ok(ratingService.getAverageRating(movieId));
+    public ResponseEntity<Double> getAverageRating(@PathVariable Long id) {
+        return ResponseEntity.ok(ratingService.getAverageRating(id));
     }
 
     // Récupérer toutes les notes d'un film
-    @GetMapping("/movie/{movieId}")
-    @Operation(summary = "Renvoyer toutes les critiques d'un film", description = "Renvoie toutes les critiques associées à un film par movieId")
-    public ResponseEntity<List<RatingResponse>> getRatingsByMovie(@PathVariable Long movieId) {
-        List<Rating> ratings = ratingService.getRatingsByMovie(movieId);
+    @GetMapping("/{id}/ratings")
+    @Operation(summary = "Renvoyer toutes les notes d'un film", description = "Renvoie toutes les notes associées à un film par son ID")
+    public ResponseEntity<List<RatingResponse>> getRatingsByMovie(@PathVariable Long id) {
+        List<Rating> ratings = ratingService.getRatingsByMovie(id);
         List<RatingResponse> response = ratings.stream()
                 .map(this::convertToDto)
                 .toList();

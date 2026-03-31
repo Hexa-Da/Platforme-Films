@@ -8,9 +8,6 @@ import jakarta.validation.constraints.NotNull;
  * lorsqu'il veut poster une critique.
  */
 public record ReviewRequest(
-        @NotNull(message = "L'ID du film est obligatoire")
-        Long movieId,
-
         @NotBlank(message = "Le contenu de la critique ne peut pas être vide")
         String content
 ) {}

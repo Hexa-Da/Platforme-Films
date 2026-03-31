@@ -105,3 +105,27 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.movie-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.movie-card-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: #ccc; /* Couleur des étoiles vides */
+}
+
+.movie-card-stars .star.on {
+  color: #f39c12; /* Orange pour les étoiles pleines */
+}
+
+.rating-number {
+  font-size: 0.75rem;
+  color: #888;
+  margin-left: 4px;
+}

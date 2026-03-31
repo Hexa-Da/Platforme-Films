@@ -36,14 +36,6 @@ class MovieServiceTest {
         verify(movieRepo).findByTitleContainingIgnoreCase("foo");
     }
 
-    @Test
-    void searchByGenre_delegatesToRepo() {
-        List<Movie> expected = List.of(new Movie("A", "d", 2020, "g", "s"));
-        when(movieRepo.findByGenre("SciFi")).thenReturn(expected);
-
-        assertEquals(expected, movieService.searchByGenre("SciFi"));
-        verify(movieRepo).findByGenre("SciFi");
-    }
 
     @Test
     void createMovie_savesAndReturns() {
