@@ -6,7 +6,8 @@ export default function OAuth2Callback() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search)
+    const hash = location.hash?.replace(/^#/, '')
+    const params = new URLSearchParams(hash || location.search)
     const token = params.get('token')
 
     if (token) {

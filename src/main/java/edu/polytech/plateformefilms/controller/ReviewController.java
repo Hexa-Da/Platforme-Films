@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/movies")
-@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Reviews", description = "Gestion des critiques de films")
 public class ReviewController {
 
@@ -30,7 +29,6 @@ public class ReviewController {
         this.userService = userService;
     }
 
-    // Création d'un avis
     @PostMapping("/{id}/reviews")
     @Operation(summary = "Créer une nouvelle critique", description = "Permet à un utilisateur de poster un avis sur un film.")
     public ResponseEntity<ReviewResponse> createReview(
@@ -38,29 +36,8 @@ public class ReviewController {
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication
     ) {
-        var user = userService.findByUsername(authentication.getName());
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
-        }
-
-        Review newReview;
-        try {
-            newReview = reviewService.createReview(
-                    id,
-                    user.getId(),
-                    request.content()
-            );
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("déjà")) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
-            }
-            if (msg.contains("Film non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-            }
-            throw e;
-        }
-
+        var user = resolveUser(authentication);
+        Review newReview = reviewService.createReview(id, user.getId(), request.content());
         return new ResponseEntity<>(convertToDto(newReview), HttpStatus.CREATED);
     }
 
@@ -72,24 +49,9 @@ public class ReviewController {
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication
     ) {
-        var user = userService.findByUsername(authentication.getName());
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
-        }
-
-        try {
-            Review updated = reviewService.updateReview(id, reviewId, user.getId(), request.content());
-            return ResponseEntity.ok(convertToDto(updated));
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("Interdit")) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
-            }
-            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-            }
-            throw e;
-        }
+        var user = resolveUser(authentication);
+        Review updated = reviewService.updateReview(id, reviewId, user.getId(), request.content());
+        return ResponseEntity.ok(convertToDto(updated));
     }
 
     @PutMapping("/{id}/reviews/mine")
@@ -99,44 +61,18 @@ public class ReviewController {
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication
     ) {
-        var user = userService.findByUsername(authentication.getName());
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
-        }
-
-        try {
-            Review updated = reviewService.updateMyReview(id, user.getId(), request.content());
-            return ResponseEntity.ok(convertToDto(updated));
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-            }
-            throw e;
-        }
+        var user = resolveUser(authentication);
+        Review updated = reviewService.updateMyReview(id, user.getId(), request.content());
+        return ResponseEntity.ok(convertToDto(updated));
     }
 
     @GetMapping("/{id}/reviews")
     @Operation(summary = "Lister les critiques d'un film", description = "Récupère tous les avis postés pour un ID de film donné.")
     public ResponseEntity<List<ReviewResponse>> getReviewsByMovie(@PathVariable Long id) {
-        List<Review> reviews = reviewService.getReviewsByMovie(id);
-
-        // On transforme la liste d'entités en liste de DTOs
-        List<ReviewResponse> response = reviews.stream()
+        List<ReviewResponse> response = reviewService.getReviewsByMovie(id).stream()
                 .map(this::convertToDto)
                 .toList();
-
         return ResponseEntity.ok(response);
-    }
-
-    // Méthode utilitaire de conversion
-    private ReviewResponse convertToDto(Review review) {
-        return new ReviewResponse(
-                review.getId(),
-                review.getUser().getUsername(),
-                review.getContent(),
-                review.getCreatedAt()
-        );
     }
 
     @Operation(summary = "Supprimer une critique", description = "Supprime un avis. Seul l'auteur peut effectuer cette action.")
@@ -144,28 +80,31 @@ public class ReviewController {
     public ResponseEntity<Void> deleteReview(
             @PathVariable Long id,
             @PathVariable Long reviewId,
-            org.springframework.security.core.Authentication authentication
+            Authentication authentication
     ) {
+        var user = resolveUser(authentication);
+        Review review = reviewService.getReviewById(reviewId);
+        if (review.getMovie() == null || !id.equals(review.getMovie().getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Critique introuvable");
+        }
+        reviewService.deleteReview(reviewId, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    private edu.polytech.plateformefilms.model.User resolveUser(Authentication authentication) {
         var user = userService.findByUsername(authentication.getName());
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
         }
+        return user;
+    }
 
-        try {
-            Review review = reviewService.getReviewById(reviewId);
-            if (review.getMovie() == null || !id.equals(review.getMovie().getId())) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Critique introuvable");
-            }
-            reviewService.deleteReview(reviewId, user.getId());
-        } catch (ResponseStatusException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("Interdit")) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
-            }
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-        }
-        return ResponseEntity.noContent().build();
+    private ReviewResponse convertToDto(Review review) {
+        return new ReviewResponse(
+                review.getId(),
+                review.getUser().getUsername(),
+                review.getContent(),
+                review.getCreatedAt()
+        );
     }
 }

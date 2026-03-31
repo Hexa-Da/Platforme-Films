@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/movies")
-@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Ratings", description = "Gestion des notes (1 à 5)")
 public class RatingController {
 
@@ -30,7 +29,6 @@ public class RatingController {
         this.userService = userService;
     }
 
-    // Noter un film
     @PostMapping("/{id}/ratings")
     @Operation(summary = "Noter un film", description = "Ajoute une note. Retourne 409 si l'utilisateur a déjà noté ce film.")
     public ResponseEntity<RatingResponse> rateMovie(
@@ -38,28 +36,8 @@ public class RatingController {
             @Valid @RequestBody RatingRequest request,
             Authentication authentication
     ) {
-        var user = userService.findByUsername(authentication.getName());
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
-        }
-
-        Rating rating;
-        try {
-            rating = ratingService.createRating(id, user.getId(), request.score());
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("déjà")) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
-            }
-            if (msg.contains("Film non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-            }
-            if (msg.contains("Utilisateur non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, msg);
-            }
-            throw e;
-        }
-
+        var user = resolveUser(authentication);
+        Rating rating = ratingService.createRating(id, user.getId(), request.score());
         return new ResponseEntity<>(convertToDto(rating), HttpStatus.CREATED);
     }
 
@@ -71,24 +49,9 @@ public class RatingController {
             @Valid @RequestBody RatingRequest request,
             Authentication authentication
     ) {
-        var user = userService.findByUsername(authentication.getName());
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
-        }
-
-        try {
-            Rating updated = ratingService.updateRating(id, ratingId, user.getId(), request.score());
-            return ResponseEntity.ok(convertToDto(updated));
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("Interdit")) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
-            }
-            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-            }
-            throw e;
-        }
+        var user = resolveUser(authentication);
+        Rating updated = ratingService.updateRating(id, ratingId, user.getId(), request.score());
+        return ResponseEntity.ok(convertToDto(updated));
     }
 
     @PutMapping("/{id}/ratings/mine")
@@ -98,42 +61,34 @@ public class RatingController {
             @Valid @RequestBody RatingRequest request,
             Authentication authentication
     ) {
-        var user = userService.findByUsername(authentication.getName());
-        if (user == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
-        }
-
-        try {
-            Rating updated = ratingService.updateMyRating(id, user.getId(), request.score());
-            return ResponseEntity.ok(convertToDto(updated));
-        } catch (RuntimeException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage();
-            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
-            }
-            throw e;
-        }
+        var user = resolveUser(authentication);
+        Rating updated = ratingService.updateMyRating(id, user.getId(), request.score());
+        return ResponseEntity.ok(convertToDto(updated));
     }
 
-    // Récupérer la note moyenne d'un film
     @GetMapping("/{id}/ratings/average")
     @Operation(summary = "Voir la moyenne d'un film", description = "Calcule la note moyenne (Double) à partir de tous les avis.")
     public ResponseEntity<Double> getAverageRating(@PathVariable Long id) {
         return ResponseEntity.ok(ratingService.getAverageRating(id));
     }
 
-    // Récupérer toutes les notes d'un film
     @GetMapping("/{id}/ratings")
     @Operation(summary = "Renvoyer toutes les notes d'un film", description = "Renvoie toutes les notes associées à un film par son ID")
     public ResponseEntity<List<RatingResponse>> getRatingsByMovie(@PathVariable Long id) {
-        List<Rating> ratings = ratingService.getRatingsByMovie(id);
-        List<RatingResponse> response = ratings.stream()
+        List<RatingResponse> response = ratingService.getRatingsByMovie(id).stream()
                 .map(this::convertToDto)
                 .toList();
         return ResponseEntity.ok(response);
     }
 
-    // Méthode utilitaire
+    private edu.polytech.plateformefilms.model.User resolveUser(Authentication authentication) {
+        var user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+        return user;
+    }
+
     private RatingResponse convertToDto(Rating rating) {
         return new RatingResponse(
                 rating.getId(),

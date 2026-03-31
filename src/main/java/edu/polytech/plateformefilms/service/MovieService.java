@@ -58,9 +58,11 @@ public class MovieService {
         return null;
     }
 
-    public void deleteMovie(Long id) {
+    public boolean deleteMovie(Long id) {
         if (movieRepo.existsById(id)) {
             movieRepo.deleteById(id);
+            return true;
         }
+        return false;
     }
 }

@@ -5,6 +5,7 @@ import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +49,7 @@ public class MovieController {
 
     @Operation(summary = "Ajouter un nouveau film", description = "Crée un film dans la base de données")
     @PostMapping
-    public ResponseEntity<Movie> createMovie(@RequestBody MovieRequest request) {
+    public ResponseEntity<Movie> createMovie(@Valid @RequestBody MovieRequest request) {
         Movie movie = new Movie();
         movie.setTitle(request.title());
         movie.setDirector(request.director());
@@ -69,7 +70,7 @@ public class MovieController {
 
     @Operation(summary = "Modifier un film existant", description = "Met à jour les informations d'un film et renvoie le film modifié. Renvoie 404 si l'ID n'existe pas.")
     @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody MovieRequest request) {
+    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @Valid @RequestBody MovieRequest request) {
         Movie updated = new Movie();
         updated.setTitle(request.title());
         updated.setDirector(request.director());
@@ -82,10 +83,12 @@ public class MovieController {
         return newMovie != null ? ResponseEntity.ok(newMovie) : ResponseEntity.notFound().build();
     }
 
-    @Operation(summary = "Supprimer un film", description = "Supprime un film de la base de données via son ID")
+    @Operation(summary = "Supprimer un film", description = "Supprime un film de la base de données via son ID. Renvoie 404 si l'ID n'existe pas.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
-        movieService.deleteMovie(id);
-        return ResponseEntity.noContent().build(); //noContent => renvoie 204 (traité mais rien à ne retouner)
+        if (!movieService.deleteMovie(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
     }
 }
