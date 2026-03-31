@@ -63,3 +63,88 @@
 .movie-detail .synopsis {
   line-height: 1.6;
 }
+
+/* Note moyenne */
+.movie-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.movie-rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.movie-rating-stars .star {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.movie-rating-stars .star.on {
+  color: #f39c12;
+}
+
+.movie-rating-stars .star.off {
+  color: #ccc;
+}
+
+.movie-rating-value {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* Section critiques */
+.reviews-section {
+  margin-top: 2.5rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1.5rem;
+}
+
+.reviews-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.reviews-empty {
+  color: #888;
+  font-style: italic;
+}
+
+.reviews-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.review-card {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.review-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.review-author {
+  font-weight: 600;
+  color: #0066cc;
+}
+
+.review-date {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.review-content {
+  margin: 0;
+  line-height: 1.5;
+}

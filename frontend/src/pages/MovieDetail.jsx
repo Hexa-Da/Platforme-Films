@@ -1,19 +1,40 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { deleteMovie, getMovie } from '../api'
+import { deleteMovie, getMovie, getReviewsByMovie, getAverageRating } from '../api'
 import './MovieDetail.css'
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  try {
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    })
+  } catch {
+    return ''
+  }
+}
 
 export default function MovieDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [movie, setMovie] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const [averageRating, setAverageRating] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const token = localStorage.getItem('token')
 
   useEffect(() => {
-    getMovie(id)
-      .then(setMovie)
+    Promise.all([
+      getMovie(id),
+      getReviewsByMovie(id).catch(() => []),
+      getAverageRating(id).catch(() => 0),
+    ])
+      .then(([movieData, reviewsData, avgData]) => {
+        setMovie(movieData)
+        setReviews(reviewsData)
+        setAverageRating(avgData)
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
@@ -32,6 +53,8 @@ export default function MovieDetail() {
   if (error) return <p className="error movie-detail">Erreur: {error}</p>
   if (!movie) return <p className="movie-detail">Film non trouvé</p>
 
+  const roundedRating = Math.round(averageRating || 0)
+
   return (
     <div className="movie-detail">
       <nav className="movie-detail-nav">
@@ -43,6 +66,22 @@ export default function MovieDetail() {
         <p className="meta">
           {movie.director} · {movie.releaseYear} · {movie.genre}
         </p>
+
+        <div className="movie-rating">
+          <div className="movie-rating-stars">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className={`star ${i < roundedRating ? 'on' : 'off'}`}>
+                &#9733;
+              </span>
+            ))}
+          </div>
+          {averageRating > 0 ? (
+            <span className="movie-rating-value">{averageRating.toFixed(1)} / 5</span>
+          ) : (
+            <span className="movie-rating-value">Pas encore noté</span>
+          )}
+        </div>
+
         <p className="synopsis">{movie.synopsis}</p>
 
         {token && (
@@ -54,6 +93,30 @@ export default function MovieDetail() {
           </div>
         )}
       </article>
+
+      <section className="reviews-section">
+        <h2>Critiques ({reviews.length})</h2>
+
+        {reviews.length === 0 ? (
+          <p className="reviews-empty">Aucune critique pour ce film.</p>
+        ) : (
+          <ul className="reviews-list">
+            {reviews.map((review) => (
+              <li key={review.id} className="review-card">
+                <div className="review-meta">
+                  <span className="review-author">@{review.username}</span>
+                  {review.createdAt && (
+                    <time className="review-date" dateTime={review.createdAt}>
+                      {formatDate(review.createdAt)}
+                    </time>
+                  )}
+                </div>
+                <p className="review-content">{review.content}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }

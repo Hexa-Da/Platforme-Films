@@ -106,6 +106,18 @@ export async function deleteMovie(id) {
   }
 }
 
+export async function getReviewsByMovie(movieId) {
+  const res = await fetch(`${API_BASE}/movies/${movieId}/reviews`);
+  if (!res.ok) throw new Error('Impossible de charger les critiques');
+  return res.json();
+}
+
+export async function getAverageRating(movieId) {
+  const res = await fetch(`${API_BASE}/movies/${movieId}/ratings/average`);
+  if (!res.ok) throw new Error('Impossible de charger la note moyenne');
+  return res.json();
+}
+
 export async function getMyProfile() {
   const token = getToken();
   if (!token) throw new Error('Non connecté');
