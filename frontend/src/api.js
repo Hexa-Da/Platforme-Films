@@ -1,4 +1,6 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1';
+export const API_BASE = import.meta.env.DEV
+  ? 'http://localhost:8080/api/v1'
+  : (import.meta.env.VITE_API_BASE || 'http://localhost:8080/api/v1');
 
 /** Origine du backend sans /api/v1 (OAuth2 est à la racine du serveur Spring). */
 export function getGoogleOAuthUrl() {

@@ -56,7 +56,8 @@
 |---------|----------|------|-------------|
 | GET | `/movies/{id}/reviews` | Non | Liste des critiques d'un film |
 | POST | `/movies/{id}/reviews` | Oui (JWT) | Ajouter une critique (409 si déjà existante) |
-| PUT | `/movies/{id}/reviews/{reviewId}` | Oui (JWT) | Modifier sa critique existante |
+| PUT | `/movies/{id}/reviews/{reviewId}` | Oui (JWT) | Modifier une critique par son ID |
+| PUT | `/movies/{id}/reviews/mine` | Oui (JWT) | Modifier ma critique existante |
 | DELETE | `/movies/{id}/reviews/{reviewId}` | Oui (JWT) | Supprimer sa critique |
 
 **ReviewRequest** (body JSON):
@@ -73,7 +74,8 @@
 | GET | `/movies/{id}/ratings` | Non | Liste des notes d'un film |
 | GET | `/movies/{id}/ratings/average` | Non | Note moyenne d'un film |
 | POST | `/movies/{id}/ratings` | Oui (JWT) | Créer sa note (409 si déjà existante) |
-| PUT | `/movies/{id}/ratings/{ratingId}` | Oui (JWT) | Modifier sa note existante |
+| PUT | `/movies/{id}/ratings/{ratingId}` | Oui (JWT) | Modifier une note par son ID |
+| PUT | `/movies/{id}/ratings/mine` | Oui (JWT) | Modifier ma note existante |
 
 **RatingRequest** (body JSON):
 ```json

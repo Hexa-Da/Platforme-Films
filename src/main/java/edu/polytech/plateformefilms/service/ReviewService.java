@@ -77,6 +77,17 @@ public class ReviewService {
         return reviewRepo.save(review);
     }
 
+    public Review updateMyReview(Long movieId, Long userId, String content) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Film non trouvé"));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        Review review = reviewRepo.findByUserAndMovie(user, movie)
+                .orElseThrow(() -> new RuntimeException("Critique introuvable"));
+        review.setContent(content);
+        return reviewRepo.save(review);
+    }
+
 
     public void deleteReview(Long reviewId, Long userId) {
         // On récupère la critique

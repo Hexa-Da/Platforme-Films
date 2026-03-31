@@ -91,6 +91,30 @@ public class RatingController {
         }
     }
 
+    @PutMapping("/{id}/ratings/mine")
+    @Operation(summary = "Modifier ma note", description = "Permet à l'utilisateur connecté de modifier sa note existante pour un film.")
+    public ResponseEntity<RatingResponse> updateMyRating(
+            @PathVariable Long id,
+            @Valid @RequestBody RatingRequest request,
+            Authentication authentication
+    ) {
+        var user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
+        try {
+            Rating updated = ratingService.updateMyRating(id, user.getId(), request.score());
+            return ResponseEntity.ok(convertToDto(updated));
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+            }
+            throw e;
+        }
+    }
+
     // Récupérer la note moyenne d'un film
     @GetMapping("/{id}/ratings/average")
     @Operation(summary = "Voir la moyenne d'un film", description = "Calcule la note moyenne (Double) à partir de tous les avis.")

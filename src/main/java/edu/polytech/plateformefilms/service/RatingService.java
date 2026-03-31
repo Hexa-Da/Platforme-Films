@@ -61,6 +61,17 @@ public class RatingService {
         return ratingRepo.save(rating);
     }
 
+    public Rating updateMyRating(Long movieId, Long userId, Integer score) {
+        Movie movie = movieRepo.findById(movieId)
+                .orElseThrow(() -> new RuntimeException("Film non trouvé"));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        Rating rating = ratingRepo.findByUserAndMovie(user, movie)
+                .orElseThrow(() -> new RuntimeException("Note introuvable"));
+        rating.setScore(score);
+        return ratingRepo.save(rating);
+    }
+
     // Récupérer toutes les notes d'un film
     public java.util.List<Rating> getRatingsByMovie(Long movieId) {
         Movie movie = movieRepo.findById(movieId)

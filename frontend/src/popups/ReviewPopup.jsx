@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './ReviewPopup.css';
 
-const ReviewPopup = ({ movieTitle, onClose, onSubmit }) => {
-  const [rating, setRating] = useState(0);
+const ReviewPopup = ({ movieTitle, initialRating = null, initialComment = '', onClose, onSubmit }) => {
+  const [rating, setRating] = useState(initialRating ?? 0);
   const [hover, setHover] = useState(0);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState(initialComment ?? "");
+
+  useEffect(() => {
+    setRating(initialRating ?? 0);
+    setComment(initialComment ?? '');
+    setHover(0);
+  }, [initialRating, initialComment, movieTitle]);
 
   const handleSubmit = () => {
     // On renvoie les données au parent qui fera l'appel API

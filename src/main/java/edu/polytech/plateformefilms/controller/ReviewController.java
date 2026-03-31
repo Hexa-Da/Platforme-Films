@@ -92,6 +92,30 @@ public class ReviewController {
         }
     }
 
+    @PutMapping("/{id}/reviews/mine")
+    @Operation(summary = "Modifier ma critique", description = "Permet à l'utilisateur connecté de modifier sa critique existante pour un film.")
+    public ResponseEntity<ReviewResponse> updateMyReview(
+            @PathVariable Long id,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication
+    ) {
+        var user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
+        try {
+            Review updated = reviewService.updateMyReview(id, user.getId(), request.content());
+            return ResponseEntity.ok(convertToDto(updated));
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+            }
+            throw e;
+        }
+    }
+
     @GetMapping("/{id}/reviews")
     @Operation(summary = "Lister les critiques d'un film", description = "Récupère tous les avis postés pour un ID de film donné.")
     public ResponseEntity<List<ReviewResponse>> getReviewsByMovie(@PathVariable Long id) {

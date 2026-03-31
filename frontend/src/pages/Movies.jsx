@@ -31,15 +31,45 @@ export default function Movies() {
         genre: genreFilter.trim() || undefined
       })
         .then(async (moviesList) => {
+          let username = null
+          if (token) {
+            try {
+              const profile = await getMyProfile()
+              username = profile?.username || null
+            } catch {
+            }
+          }
+
           const enrichedMovies = await Promise.all(
             moviesList.map(async (movie) => {
               try {
-                const res = await fetch(`${API_BASE}/movies/${movie.id}/ratings/average`);
-                if (!res.ok) return { ...movie, averageRating: 0 };
-                const avg = await res.json();
-                return { ...movie, averageRating: avg };
+                const [avgRes, ratingsRes, reviewsRes] = await Promise.all([
+                  fetch(`${API_BASE}/movies/${movie.id}/ratings/average`),
+                  username ? fetch(`${API_BASE}/movies/${movie.id}/ratings`) : Promise.resolve(null),
+                  username ? fetch(`${API_BASE}/movies/${movie.id}/reviews`) : Promise.resolve(null),
+                ])
+
+                const avg = avgRes.ok ? await avgRes.json() : 0
+                let hasUserFeedback = false
+                let userRating = null
+                let userReviewContent = ''
+                if (username && ratingsRes?.ok && reviewsRes?.ok) {
+                  const [ratings, reviews] = await Promise.all([
+                    ratingsRes.json(),
+                    reviewsRes.json(),
+                  ])
+                  const userRatingEntry = Array.isArray(ratings) ? ratings.find((r) => r.username === username) : null
+                  const userReviewEntry = Array.isArray(reviews) ? reviews.find((r) => r.username === username) : null
+                  const hasUserRating = Boolean(userRatingEntry)
+                  const hasUserReview = Boolean(userReviewEntry)
+                  hasUserFeedback = hasUserRating || hasUserReview
+                  userRating = userRatingEntry?.score ?? null
+                  userReviewContent = userReviewEntry?.content ?? ''
+                }
+
+                return { ...movie, averageRating: avg, hasUserFeedback, userRating, userReviewContent };
               } catch {
-                return { ...movie, averageRating: 0 };
+                return { ...movie, averageRating: 0, hasUserFeedback: false, userRating: null, userReviewContent: '' };
               }
             })
           );
@@ -50,7 +80,7 @@ export default function Movies() {
     }, delay);
 
     return () => clearTimeout(t);
-  }, [recherche, genreFilter]);
+  }, [recherche, genreFilter, token]);
 
 
   const MovieStars = ({ rating }) => {
@@ -72,6 +102,7 @@ export default function Movies() {
   const parseError = async (res, fallbackMessage) => {
     const errBody = await res.json().catch(() => null)
     if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem('token')
       return sessionError
     }
     return errBody?.message || fallbackMessage
@@ -98,24 +129,19 @@ export default function Movies() {
         throw new Error('Aucun film sélectionné')
       }
 
+      try {
+        await getMyProfile()
+      } catch {
+        localStorage.removeItem('token')
+        throw new Error('Session expirée. Veuillez vous reconnecter.')
+      }
+
       const ratingRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/ratings`, {
         method: 'POST',
         body: JSON.stringify({ score: data.score }),
       })
       if (ratingRes.status === 409) {
-        const [profile, ratingsRes] = await Promise.all([
-          getMyProfile(),
-          fetch(`${API_BASE}/movies/${selectedMovie.id}/ratings`),
-        ])
-        if (!ratingsRes.ok) {
-          throw new Error("Impossible de récupérer votre note existante")
-        }
-        const ratings = await ratingsRes.json()
-        const existingRating = ratings.find((r) => r.username === profile.username)
-        if (!existingRating?.id) {
-          throw new Error("Note existante introuvable pour édition")
-        }
-        const updateRatingRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/ratings/${existingRating.id}`, {
+        const updateRatingRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/ratings/mine`, {
           method: 'PUT',
           body: JSON.stringify({ score: data.score }),
         })
@@ -131,19 +157,7 @@ export default function Movies() {
         body: JSON.stringify({ content: data.content }),
       })
       if (reviewRes.status === 409) {
-        const [profile, reviewsRes] = await Promise.all([
-          getMyProfile(),
-          fetch(`${API_BASE}/movies/${selectedMovie.id}/reviews`),
-        ])
-        if (!reviewsRes.ok) {
-          throw new Error("Impossible de récupérer votre critique existante")
-        }
-        const reviews = await reviewsRes.json()
-        const existingReview = reviews.find((r) => r.username === profile.username)
-        if (!existingReview?.id) {
-          throw new Error("Critique existante introuvable pour édition")
-        }
-        const updateRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/reviews/${existingReview.id}`, {
+        const updateRes = await authFetch(`${API_BASE}/movies/${selectedMovie.id}/reviews/mine`, {
           method: 'PUT',
           body: JSON.stringify({ content: data.content }),
         })
@@ -254,7 +268,7 @@ export default function Movies() {
                   setSelectedMovie(movie);
                 }}
               >
-                Noter ce film
+                {movie.hasUserFeedback ? 'Editer ma note' : 'Noter ce film'}
               </button>
             )}
           </Link>
@@ -265,6 +279,8 @@ export default function Movies() {
       {selectedMovie && (
         <ReviewPopup
           movieTitle={selectedMovie.title}
+          initialRating={selectedMovie.userRating}
+          initialComment={selectedMovie.userReviewContent}
           onClose={() => setSelectedMovie(null)}
           onSubmit={handleReviewSubmit}
         />
