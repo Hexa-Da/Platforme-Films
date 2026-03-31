@@ -37,6 +37,11 @@ public class ReviewService {
         return reviewRepo.findByUser(user);
     }
 
+    public Review getReviewById(Long reviewId) {
+        return reviewRepo.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Critique introuvable"));
+    }
+
 
     public Review createReview(Long movieId, Long userId, String content) {
         // On récupère les objets

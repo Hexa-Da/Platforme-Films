@@ -78,6 +78,7 @@ public class ReviewController {
     @Operation(summary = "Supprimer une critique", description = "Supprime un avis. Seul l'auteur peut effectuer cette action.")
     @DeleteMapping("/{id}/reviews/{reviewId}")
     public ResponseEntity<Void> deleteReview(
+            @PathVariable Long id,
             @PathVariable Long reviewId,
             org.springframework.security.core.Authentication authentication
     ) {
@@ -87,7 +88,13 @@ public class ReviewController {
         }
 
         try {
+            Review review = reviewService.getReviewById(reviewId);
+            if (review.getMovie() == null || !id.equals(review.getMovie().getId())) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Critique introuvable");
+            }
             reviewService.deleteReview(reviewId, user.getId());
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (RuntimeException e) {
             String msg = e.getMessage() == null ? "" : e.getMessage();
             if (msg.contains("Interdit")) {

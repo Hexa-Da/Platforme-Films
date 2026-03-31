@@ -50,11 +50,35 @@
 }
 ```
 
-### À venir (Juniors)
+### Reviews
 
-- GET/POST `/movies/{id}/reviews`
-- GET/POST `/movies/{id}/ratings`
-- GET `/users/{id}`
+| Méthode | Endpoint | Auth | Description |
+|---------|----------|------|-------------|
+| GET | `/movies/{id}/reviews` | Non | Liste des critiques d'un film |
+| POST | `/movies/{id}/reviews` | Oui (JWT) | Ajouter une critique |
+| DELETE | `/movies/{id}/reviews/{reviewId}` | Oui (JWT) | Supprimer sa critique |
+
+**ReviewRequest** (body JSON):
+```json
+{
+  "content": "string"
+}
+```
+
+### Ratings
+
+| Méthode | Endpoint | Auth | Description |
+|---------|----------|------|-------------|
+| GET | `/movies/{id}/ratings` | Non | Liste des notes d'un film |
+| GET | `/movies/{id}/ratings/average` | Non | Note moyenne d'un film |
+| POST | `/movies/{id}/ratings` | Oui (JWT) | Créer ou mettre à jour sa note |
+
+**RatingRequest** (body JSON):
+```json
+{
+  "score": 4
+}
+```
 
 ## Authentification
 

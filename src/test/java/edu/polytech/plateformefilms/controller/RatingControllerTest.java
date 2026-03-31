@@ -113,4 +113,42 @@ class RatingControllerTest {
                 .andExpect(jsonPath("$.score").value(4))
                 .andExpect(jsonPath("$.username").value("bob"));
     }
+
+    @Test
+    void rateMovie_WhenUserNotFound_ShouldReturn401() throws Exception {
+        RatingRequest request = new RatingRequest(4);
+        when(userService.findByUsername("bob")).thenReturn(null);
+
+        mockMvc.perform(post("/api/v1/movies/1/ratings")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void rateMovie_WhenMovieNotFound_ShouldReturn404() throws Exception {
+        RatingRequest request = new RatingRequest(4);
+        User mockUser = new User();
+        mockUser.setId(2L);
+        mockUser.setUsername("bob");
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(ratingService.rateMovie(eq(1L), eq(2L), eq(4)))
+                .thenThrow(new RuntimeException("Film non trouvé"));
+
+        mockMvc.perform(post("/api/v1/movies/1/ratings")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void rateMovie_WhenScoreOutOfRange_ShouldReturn400() throws Exception {
+        mockMvc.perform(post("/api/v1/movies/1/ratings")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"score\": 6}"))
+                .andExpect(status().isBadRequest());
+    }
 }

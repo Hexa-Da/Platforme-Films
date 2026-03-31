@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -114,10 +115,79 @@ class ReviewControllerTest {
         User mockUser = new User();
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
+        Review review = new Review();
+        review.setId(100L);
+        review.setUser(mockUser);
+        edu.polytech.plateformefilms.model.Movie movie = new edu.polytech.plateformefilms.model.Movie();
+        movie.setId(1L);
+        review.setMovie(movie);
+        when(reviewService.getReviewById(100L)).thenReturn(review);
 
         // WHEN & THEN
         mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
                         .principal(mockAuth))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void createReview_WhenUserNotFound_ShouldReturn401() throws Exception {
+        ReviewRequest request = new ReviewRequest("Texte");
+        when(userService.findByUsername("bob")).thenReturn(null);
+
+        mockMvc.perform(post("/api/v1/movies/1/reviews")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteReview_WhenNotAuthor_ShouldReturn403() throws Exception {
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        Review review = new Review();
+        review.setId(100L);
+        review.setUser(mockUser);
+        edu.polytech.plateformefilms.model.Movie movie = new edu.polytech.plateformefilms.model.Movie();
+        movie.setId(1L);
+        review.setMovie(movie);
+        when(reviewService.getReviewById(100L)).thenReturn(review);
+        doThrow(new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !"))
+                .when(reviewService).deleteReview(100L, 2L);
+
+        mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteReview_WhenMovieReviewMismatch_ShouldReturn404() throws Exception {
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        Review review = new Review();
+        review.setId(100L);
+        review.setUser(mockUser);
+        edu.polytech.plateformefilms.model.Movie movie = new edu.polytech.plateformefilms.model.Movie();
+        movie.setId(99L);
+        review.setMovie(movie);
+        when(reviewService.getReviewById(100L)).thenReturn(review);
+
+        mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteReview_WhenReviewNotFound_ShouldReturn404() throws Exception {
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(reviewService.getReviewById(100L)).thenThrow(new RuntimeException("Critique introuvable"));
+
+        mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth))
+                .andExpect(status().isNotFound());
     }
 }

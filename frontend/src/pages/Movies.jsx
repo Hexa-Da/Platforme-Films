@@ -74,20 +74,20 @@ export default function Movies() {
         throw new Error('Aucun film sélectionné')
       }
 
-      const ratingRes = await fetch(`${API_BASE}/ratings`, {
+      const ratingRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/ratings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
-        body: JSON.stringify({ movieId: selectedMovie.id, score: data.score }),
+        body: JSON.stringify({ score: data.score }),
       })
       if (!ratingRes.ok) {
         const errBody = await ratingRes.json().catch(() => null)
         throw new Error(errBody?.message || "Erreur lors de l'envoi de la note")
       }
 
-      const reviewRes = await fetch(`${API_BASE}/reviews`, {
+      const reviewRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
-        body: JSON.stringify({ movieId: selectedMovie.id, content: data.content }),
+        body: JSON.stringify({ content: data.content }),
       })
       if (!reviewRes.ok) {
         const errBody = await reviewRes.json().catch(() => null)
