@@ -100,21 +100,23 @@ export default function MovieDetail() {
         {reviews.length === 0 ? (
           <p className="reviews-empty">Aucune critique pour ce film.</p>
         ) : (
-          <ul className="reviews-list">
-            {reviews.map((review) => (
-              <li key={review.id} className="review-card">
-                <div className="review-meta">
-                  <span className="review-author">@{review.username}</span>
-                  {review.createdAt && (
-                    <time className="review-date" dateTime={review.createdAt}>
-                      {formatDate(review.createdAt)}
-                    </time>
-                  )}
-                </div>
-                <p className="review-content">{review.content}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="reviews-list-scroll">
+            <ul className="reviews-list">
+              {reviews.map((review) => (
+                <li key={review.id} className="review-card">
+                  <div className="review-meta">
+                    <span className="review-author">@{review.username}</span>
+                    {review.createdAt && (
+                      <time className="review-date" dateTime={review.createdAt}>
+                        {formatDate(review.createdAt)}
+                      </time>
+                    )}
+                  </div>
+                  <p className="review-content">{review.content}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </section>
     </div>
