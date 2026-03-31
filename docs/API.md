@@ -55,7 +55,8 @@
 | Méthode | Endpoint | Auth | Description |
 |---------|----------|------|-------------|
 | GET | `/movies/{id}/reviews` | Non | Liste des critiques d'un film |
-| POST | `/movies/{id}/reviews` | Oui (JWT) | Ajouter une critique |
+| POST | `/movies/{id}/reviews` | Oui (JWT) | Ajouter une critique (409 si déjà existante) |
+| PUT | `/movies/{id}/reviews/{reviewId}` | Oui (JWT) | Modifier sa critique existante |
 | DELETE | `/movies/{id}/reviews/{reviewId}` | Oui (JWT) | Supprimer sa critique |
 
 **ReviewRequest** (body JSON):
@@ -71,7 +72,8 @@
 |---------|----------|------|-------------|
 | GET | `/movies/{id}/ratings` | Non | Liste des notes d'un film |
 | GET | `/movies/{id}/ratings/average` | Non | Note moyenne d'un film |
-| POST | `/movies/{id}/ratings` | Oui (JWT) | Créer ou mettre à jour sa note |
+| POST | `/movies/{id}/ratings` | Oui (JWT) | Créer sa note (409 si déjà existante) |
+| PUT | `/movies/{id}/ratings/{ratingId}` | Oui (JWT) | Modifier sa note existante |
 
 **RatingRequest** (body JSON):
 ```json

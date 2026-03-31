@@ -51,6 +51,10 @@ public class ReviewService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Erreur : L'utilisateur avec l'ID " + userId + " n'existe pas."));
 
+        if (reviewRepo.findByUserAndMovie(user, movie).isPresent()) {
+            throw new RuntimeException("Une critique existe déjà pour ce film");
+        }
+
         // On crée et remplit la review
         Review review = new Review();
 
@@ -58,6 +62,18 @@ public class ReviewService {
         review.setUser(user);
         review.setContent(content);
 
+        return reviewRepo.save(review);
+    }
+
+    public Review updateReview(Long movieId, Long reviewId, Long userId, String content) {
+        Review review = getReviewById(reviewId);
+        if (review.getMovie() == null || !movieId.equals(review.getMovie().getId())) {
+            throw new RuntimeException("Critique introuvable");
+        }
+        if (review.getUser() == null || !userId.equals(review.getUser().getId())) {
+            throw new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !");
+        }
+        review.setContent(content);
         return reviewRepo.save(review);
     }
 

@@ -32,7 +32,7 @@ public class RatingController {
 
     // Noter un film
     @PostMapping("/{id}/ratings")
-    @Operation(summary = "Noter un film", description = "Ajoute une note ou met à jour la note existante de l'utilisateur pour ce film.")
+    @Operation(summary = "Noter un film", description = "Ajoute une note. Retourne 409 si l'utilisateur a déjà noté ce film.")
     public ResponseEntity<RatingResponse> rateMovie(
             @PathVariable Long id,
             @Valid @RequestBody RatingRequest request,
@@ -43,12 +43,14 @@ public class RatingController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
         }
 
-        // Le service gère si c'est une création ou une mise à jour
         Rating rating;
         try {
-            rating = ratingService.rateMovie(id, user.getId(), request.score());
+            rating = ratingService.createRating(id, user.getId(), request.score());
         } catch (RuntimeException e) {
             String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("déjà")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
+            }
             if (msg.contains("Film non trouvé")) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
             }
@@ -59,6 +61,34 @@ public class RatingController {
         }
 
         return new ResponseEntity<>(convertToDto(rating), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}/ratings/{ratingId}")
+    @Operation(summary = "Modifier sa note", description = "Permet à l'auteur de modifier sa note pour un film.")
+    public ResponseEntity<RatingResponse> updateRating(
+            @PathVariable Long id,
+            @PathVariable Long ratingId,
+            @Valid @RequestBody RatingRequest request,
+            Authentication authentication
+    ) {
+        var user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
+        try {
+            Rating updated = ratingService.updateRating(id, ratingId, user.getId(), request.score());
+            return ResponseEntity.ok(convertToDto(updated));
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("Interdit")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
+            }
+            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+            }
+            throw e;
+        }
     }
 
     // Récupérer la note moyenne d'un film

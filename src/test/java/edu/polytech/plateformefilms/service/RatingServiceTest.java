@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -104,46 +106,66 @@ class RatingServiceTest {
     }
 
     // --------------------------------------------------------
-    // TESTS POUR RATE MOVIE (Création vs Mise à jour)
+    // TESTS POUR CREATE RATING / UPDATE RATING
     // --------------------------------------------------------
 
     @Test
-    void rateMovie_WhenNewRating_ShouldCreateAndSave() {
-        // GIVEN : L'utilisateur n'a pas encore noté le film
+    void createRating_WhenNewRating_ShouldCreateAndSave() {
         when(movieRepo.findById(1L)).thenReturn(Optional.of(mockMovie));
         when(userRepo.findById(10L)).thenReturn(Optional.of(mockUser));
-
-        // On simule que le repo ne trouve pas de note existante
-        // Note : Si ton findByUserAndMovie renvoie Rating (et pas Optional<Rating>), remplace Optional.empty() par null
         when(ratingRepo.findByUserAndMovie(mockUser, mockMovie)).thenReturn(Optional.empty());
-
-        // On simule la sauvegarde en renvoyant l'objet passé en paramètre
         when(ratingRepo.save(any(Rating.class))).thenAnswer(i -> i.getArgument(0));
 
-        // WHEN
-        Rating result = ratingService.rateMovie(1L, 10L, 5);
+        Rating result = ratingService.createRating(1L, 10L, 5);
 
-        // THEN
         assertNotNull(result);
         assertEquals(5, result.getScore());
-        verify(ratingRepo, times(1)).save(any(Rating.class)); // On a bien sauvegardé une NOUVELLE note
+        verify(ratingRepo, times(1)).save(any(Rating.class));
     }
 
     @Test
-    void rateMovie_WhenExistingRating_ShouldUpdateAndSave() {
-        // GIVEN : L'utilisateur a DÉJÀ noté le film (note de 3 préparée dans le setUp)
+    void createRating_WhenExistingRating_ShouldThrowException() {
         when(movieRepo.findById(1L)).thenReturn(Optional.of(mockMovie));
         when(userRepo.findById(10L)).thenReturn(Optional.of(mockUser));
-
-        // Le repo trouve la note existante
         when(ratingRepo.findByUserAndMovie(mockUser, mockMovie)).thenReturn(Optional.of(mockRating));
-        when(ratingRepo.save(any(Rating.class))).thenReturn(mockRating);
 
-        // WHEN : L'utilisateur change d'avis et met 5
-        Rating result = ratingService.rateMovie(1L, 10L, 5);
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                ratingService.createRating(1L, 10L, 5));
 
-        // THEN
-        assertEquals(5, result.getScore(), "Le score devrait être mis à jour à 5");
-        verify(ratingRepo, times(1)).save(mockRating); // On a sauvegardé par-dessus la note EXISTANTE
+        assertTrue(exception.getMessage().contains("déjà"));
+        verify(ratingRepo, never()).save(any());
+    }
+
+    @Test
+    void updateRating_WhenAuthor_ShouldUpdateAndSave() {
+        when(ratingRepo.findById(100L)).thenReturn(Optional.of(mockRating));
+        when(ratingRepo.save(mockRating)).thenReturn(mockRating);
+
+        Rating updated = ratingService.updateRating(1L, 100L, 10L, 5);
+
+        assertEquals(5, updated.getScore());
+        verify(ratingRepo, times(1)).save(mockRating);
+    }
+
+    @Test
+    void updateRating_WhenNotAuthor_ShouldThrowException() {
+        when(ratingRepo.findById(100L)).thenReturn(Optional.of(mockRating));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                ratingService.updateRating(1L, 100L, 99L, 5));
+
+        assertTrue(exception.getMessage().contains("Interdit"));
+        verify(ratingRepo, never()).save(any());
+    }
+
+    @Test
+    void updateRating_WhenMovieMismatch_ShouldThrowException() {
+        when(ratingRepo.findById(100L)).thenReturn(Optional.of(mockRating));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                ratingService.updateRating(99L, 100L, 10L, 5));
+
+        assertTrue(exception.getMessage().contains("introuvable"));
+        verify(ratingRepo, never()).save(any());
     }
 }

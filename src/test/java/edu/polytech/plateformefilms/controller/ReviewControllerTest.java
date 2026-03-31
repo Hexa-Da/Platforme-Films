@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ReviewController.class)
@@ -188,6 +189,75 @@ class ReviewControllerTest {
 
         mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
                         .principal(mockAuth))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createReview_WhenDuplicate_ShouldReturn409() throws Exception {
+        ReviewRequest request = new ReviewRequest("Texte");
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(reviewService.createReview(eq(1L), eq(2L), anyString()))
+                .thenThrow(new RuntimeException("Une critique existe déjà pour ce film"));
+
+        mockMvc.perform(post("/api/v1/movies/1/reviews")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updateReview_WhenAuthor_ShouldReturn200() throws Exception {
+        ReviewRequest request = new ReviewRequest("Texte modifié");
+        User mockUser = new User();
+        mockUser.setId(2L);
+        mockUser.setUsername("bob");
+        Review mockReview = new Review();
+        mockReview.setId(100L);
+        mockReview.setContent("Texte modifié");
+        mockReview.setUser(mockUser);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(reviewService.updateReview(1L, 100L, 2L, "Texte modifié")).thenReturn(mockReview);
+
+        mockMvc.perform(put("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").value("Texte modifié"));
+    }
+
+    @Test
+    void updateReview_WhenNotAuthor_ShouldReturn403() throws Exception {
+        ReviewRequest request = new ReviewRequest("Texte modifié");
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(reviewService.updateReview(1L, 100L, 2L, "Texte modifié"))
+                .thenThrow(new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !"));
+
+        mockMvc.perform(put("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateReview_WhenNotFound_ShouldReturn404() throws Exception {
+        ReviewRequest request = new ReviewRequest("Texte modifié");
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(reviewService.updateReview(1L, 100L, 2L, "Texte modifié"))
+                .thenThrow(new RuntimeException("Critique introuvable"));
+
+        mockMvc.perform(put("/api/v1/movies/1/reviews/100")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());
     }
 }

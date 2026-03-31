@@ -92,6 +92,7 @@ class ReviewServiceTest {
         // Arrange
         when(movieRepo.findById(10L)).thenReturn(Optional.of(mockMovie));
         when(userRepo.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(reviewRepo.findByUserAndMovie(mockUser, mockMovie)).thenReturn(Optional.empty());
         when(reviewRepo.save(any(Review.class))).thenReturn(mockReview);
 
         // Act
@@ -101,6 +102,52 @@ class ReviewServiceTest {
         assertNotNull(result);
         assertEquals("Super film !", result.getContent());
         assertEquals(mockUser, result.getUser());
+    }
+
+    @Test
+    void createReview_WhenAlreadyExists_ShouldThrowException() {
+        when(movieRepo.findById(10L)).thenReturn(Optional.of(mockMovie));
+        when(userRepo.findById(1L)).thenReturn(Optional.of(mockUser));
+        when(reviewRepo.findByUserAndMovie(mockUser, mockMovie)).thenReturn(Optional.of(mockReview));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                reviewService.createReview(10L, 1L, "Déjà postée"));
+
+        assertTrue(exception.getMessage().contains("déjà"));
+        verify(reviewRepo, never()).save(any());
+    }
+
+    @Test
+    void updateReview_WhenAuthor_ShouldUpdateAndSave() {
+        when(reviewRepo.findById(100L)).thenReturn(Optional.of(mockReview));
+        when(reviewRepo.save(mockReview)).thenReturn(mockReview);
+
+        Review updated = reviewService.updateReview(10L, 100L, 1L, "Texte modifié");
+
+        assertEquals("Texte modifié", updated.getContent());
+        verify(reviewRepo, times(1)).save(mockReview);
+    }
+
+    @Test
+    void updateReview_WhenNotAuthor_ShouldThrowException() {
+        when(reviewRepo.findById(100L)).thenReturn(Optional.of(mockReview));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                reviewService.updateReview(10L, 100L, 2L, "Texte modifié"));
+
+        assertTrue(exception.getMessage().contains("Interdit"));
+        verify(reviewRepo, never()).save(any());
+    }
+
+    @Test
+    void updateReview_WhenMovieMismatch_ShouldThrowException() {
+        when(reviewRepo.findById(100L)).thenReturn(Optional.of(mockReview));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                reviewService.updateReview(99L, 100L, 1L, "Texte modifié"));
+
+        assertTrue(exception.getMessage().contains("introuvable"));
+        verify(reviewRepo, never()).save(any());
     }
 
     @Test

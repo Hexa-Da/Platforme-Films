@@ -9,7 +9,6 @@ import edu.polytech.plateformefilms.repository.UserRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RatingService {
@@ -26,33 +25,40 @@ public class RatingService {
 
     // Méthodes
 
-    public Rating rateMovie(Long movieId, Long userId, Integer score) {
-        // On récupère les objets
+    public Rating getRatingById(Long ratingId) {
+        return ratingRepo.findById(ratingId)
+                .orElseThrow(() -> new RuntimeException("Note introuvable"));
+    }
+
+    public Rating createRating(Long movieId, Long userId, Integer score) {
         Movie movie = movieRepo.findById(movieId)
                 .orElseThrow(() -> new RuntimeException("Film non trouvé"));
 
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-
-        Optional<Rating> existingRatingOpt = ratingRepo.findByUserAndMovie(user, movie);
-
-        if (existingRatingOpt.isPresent()) {
-            // La note existe déjà donc on la met à jour
-            Rating ratingToUpdate = existingRatingOpt.get();
-            ratingToUpdate.setScore(score);
-            return ratingRepo.save(ratingToUpdate);
-        } else {
-            // Elle n'existe encore pas
-
-            Rating newRating = new Rating();
-            newRating.setMovie(movie);
-            newRating.setUser(user);
-            newRating.setScore(score);
-
-            return ratingRepo.save(newRating);
+        if (ratingRepo.findByUserAndMovie(user, movie).isPresent()) {
+            throw new RuntimeException("Une note existe déjà pour ce film");
         }
 
+        Rating newRating = new Rating();
+        newRating.setMovie(movie);
+        newRating.setUser(user);
+        newRating.setScore(score);
+
+        return ratingRepo.save(newRating);
+    }
+
+    public Rating updateRating(Long movieId, Long ratingId, Long userId, Integer score) {
+        Rating rating = getRatingById(ratingId);
+        if (rating.getMovie() == null || !movieId.equals(rating.getMovie().getId())) {
+            throw new RuntimeException("Note introuvable");
+        }
+        if (rating.getUser() == null || !userId.equals(rating.getUser().getId())) {
+            throw new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette note !");
+        }
+        rating.setScore(score);
+        return ratingRepo.save(rating);
     }
 
     // Récupérer toutes les notes d'un film

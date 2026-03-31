@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RatingController.class)
@@ -103,7 +104,7 @@ class RatingControllerTest {
         mockRating.setUser(mockUser);
 
         when(userService.findByUsername("bob")).thenReturn(mockUser);
-        when(ratingService.rateMovie(eq(1L), eq(2L), eq(4))).thenReturn(mockRating);
+        when(ratingService.createRating(eq(1L), eq(2L), eq(4))).thenReturn(mockRating);
 
         mockMvc.perform(post("/api/v1/movies/1/ratings")
                         .principal(mockAuth) // Injection manuelle du mock d'auth
@@ -133,10 +134,80 @@ class RatingControllerTest {
         mockUser.setId(2L);
         mockUser.setUsername("bob");
         when(userService.findByUsername("bob")).thenReturn(mockUser);
-        when(ratingService.rateMovie(eq(1L), eq(2L), eq(4)))
+        when(ratingService.createRating(eq(1L), eq(2L), eq(4)))
                 .thenThrow(new RuntimeException("Film non trouvé"));
 
         mockMvc.perform(post("/api/v1/movies/1/ratings")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void rateMovie_WhenDuplicate_ShouldReturn409() throws Exception {
+        RatingRequest request = new RatingRequest(4);
+        User mockUser = new User();
+        mockUser.setId(2L);
+        mockUser.setUsername("bob");
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(ratingService.createRating(eq(1L), eq(2L), eq(4)))
+                .thenThrow(new RuntimeException("Une note existe déjà pour ce film"));
+
+        mockMvc.perform(post("/api/v1/movies/1/ratings")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updateRating_WhenAuthor_ShouldReturn200() throws Exception {
+        RatingRequest request = new RatingRequest(5);
+        User mockUser = new User();
+        mockUser.setId(2L);
+        mockUser.setUsername("bob");
+        Rating mockRating = new Rating();
+        mockRating.setId(50L);
+        mockRating.setScore(5);
+        mockRating.setUser(mockUser);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(ratingService.updateRating(1L, 50L, 2L, 5)).thenReturn(mockRating);
+
+        mockMvc.perform(put("/api/v1/movies/1/ratings/50")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(5));
+    }
+
+    @Test
+    void updateRating_WhenNotAuthor_ShouldReturn403() throws Exception {
+        RatingRequest request = new RatingRequest(5);
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(ratingService.updateRating(1L, 50L, 2L, 5))
+                .thenThrow(new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette note !"));
+
+        mockMvc.perform(put("/api/v1/movies/1/ratings/50")
+                        .principal(mockAuth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateRating_WhenNotFound_ShouldReturn404() throws Exception {
+        RatingRequest request = new RatingRequest(5);
+        User mockUser = new User();
+        mockUser.setId(2L);
+        when(userService.findByUsername("bob")).thenReturn(mockUser);
+        when(ratingService.updateRating(1L, 50L, 2L, 5))
+                .thenThrow(new RuntimeException("Note introuvable"));
+
+        mockMvc.perform(put("/api/v1/movies/1/ratings/50")
                         .principal(mockAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { getMovies, logout, API_BASE } from '../api'
+import { getMovies, logout, API_BASE, getMyProfile } from '../api'
 import './Movies.css'
 import ReviewPopup from '../popups/ReviewPopup'
 import SearchBar from '../components/SearchBar/SearchBar'
@@ -79,7 +79,29 @@ export default function Movies() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
         body: JSON.stringify({ score: data.score }),
       })
-      if (!ratingRes.ok) {
+      if (ratingRes.status === 409) {
+        const [profile, ratingsRes] = await Promise.all([
+          getMyProfile(),
+          fetch(`${API_BASE}/movies/${selectedMovie.id}/ratings`),
+        ])
+        if (!ratingsRes.ok) {
+          throw new Error("Impossible de récupérer votre note existante")
+        }
+        const ratings = await ratingsRes.json()
+        const existingRating = ratings.find((r) => r.username === profile.username)
+        if (!existingRating?.id) {
+          throw new Error("Note existante introuvable pour édition")
+        }
+        const updateRatingRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/ratings/${existingRating.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+          body: JSON.stringify({ score: data.score }),
+        })
+        if (!updateRatingRes.ok) {
+          const errBody = await updateRatingRes.json().catch(() => null)
+          throw new Error(errBody?.message || "Erreur lors de la mise à jour de la note")
+        }
+      } else if (!ratingRes.ok) {
         const errBody = await ratingRes.json().catch(() => null)
         throw new Error(errBody?.message || "Erreur lors de l'envoi de la note")
       }
@@ -89,7 +111,29 @@ export default function Movies() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
         body: JSON.stringify({ content: data.content }),
       })
-      if (!reviewRes.ok) {
+      if (reviewRes.status === 409) {
+        const [profile, reviewsRes] = await Promise.all([
+          getMyProfile(),
+          fetch(`${API_BASE}/movies/${selectedMovie.id}/reviews`),
+        ])
+        if (!reviewsRes.ok) {
+          throw new Error("Impossible de récupérer votre critique existante")
+        }
+        const reviews = await reviewsRes.json()
+        const existingReview = reviews.find((r) => r.username === profile.username)
+        if (!existingReview?.id) {
+          throw new Error("Critique existante introuvable pour édition")
+        }
+        const updateRes = await fetch(`${API_BASE}/movies/${selectedMovie.id}/reviews/${existingReview.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+          body: JSON.stringify({ content: data.content }),
+        })
+        if (!updateRes.ok) {
+          const errBody = await updateRes.json().catch(() => null)
+          throw new Error(errBody?.message || "Erreur lors de la mise à jour de la critique")
+        }
+      } else if (!reviewRes.ok) {
         const errBody = await reviewRes.json().catch(() => null)
         throw new Error(errBody?.message || "Erreur lors de l'envoi de la critique")
       }

@@ -43,13 +43,53 @@ public class ReviewController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
         }
 
-        Review newReview = reviewService.createReview(
-                id,
-                user.getId(),
-                request.content()
-        );
+        Review newReview;
+        try {
+            newReview = reviewService.createReview(
+                    id,
+                    user.getId(),
+                    request.content()
+            );
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("déjà")) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, msg);
+            }
+            if (msg.contains("Film non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+            }
+            throw e;
+        }
 
         return new ResponseEntity<>(convertToDto(newReview), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}/reviews/{reviewId}")
+    @Operation(summary = "Modifier sa critique", description = "Permet à l'auteur de modifier le contenu de sa critique pour un film.")
+    public ResponseEntity<ReviewResponse> updateReview(
+            @PathVariable Long id,
+            @PathVariable Long reviewId,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication
+    ) {
+        var user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur non trouvé");
+        }
+
+        try {
+            Review updated = reviewService.updateReview(id, reviewId, user.getId(), request.content());
+            return ResponseEntity.ok(convertToDto(updated));
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("Interdit")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, msg);
+            }
+            if (msg.contains("introuvable") || msg.contains("Film non trouvé")) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, msg);
+            }
+            throw e;
+        }
     }
 
     @GetMapping("/{id}/reviews")
