@@ -5,8 +5,10 @@ import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.service.MovieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -54,7 +56,12 @@ public class MovieController {
         movie.setSynopsis(request.synopsis());
         movie.setReleaseYear(request.releaseYear());
 
-        Movie created = movieService.createMovie(movie);
+        Movie created;
+        try {
+            created = movieService.createMovie(movie);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
 
         return ResponseEntity.status(201).body(created); // 201 = ressource créée
     }

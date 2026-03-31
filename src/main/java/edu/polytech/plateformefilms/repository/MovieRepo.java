@@ -11,4 +11,5 @@ public interface MovieRepo extends JpaRepository<Movie, Long> {
 
     List<Movie> findByGenreContainingIgnoreCase(String genre);
     List<Movie> findByReleaseYear(Integer year);
+    boolean existsByTitleIgnoreCaseAndDirectorIgnoreCaseAndReleaseYear(String title, String director, Integer releaseYear);
 }

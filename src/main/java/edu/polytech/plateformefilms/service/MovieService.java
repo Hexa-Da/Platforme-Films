@@ -32,6 +32,13 @@ public class MovieService {
     }
 
     public Movie createMovie(Movie movie) {
+        if (movieRepo.existsByTitleIgnoreCaseAndDirectorIgnoreCaseAndReleaseYear(
+                movie.getTitle(),
+                movie.getDirector(),
+                movie.getReleaseYear()
+        )) {
+            throw new IllegalArgumentException("Un film identique existe déjà");
+        }
         return movieRepo.save(movie);
     }
 
