@@ -2,6 +2,8 @@ package edu.polytech.plateformefilms.service;
 
 import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.repository.MovieRepo;
+import edu.polytech.plateformefilms.repository.RatingRepo;
+import edu.polytech.plateformefilms.repository.ReviewRepo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +25,12 @@ class MovieServiceTest {
 
     @Mock
     private MovieRepo movieRepo;
+
+    @Mock
+    private ReviewRepo reviewRepo;
+
+    @Mock
+    private RatingRepo ratingRepo;
 
     @InjectMocks
     private MovieService movieService;
@@ -83,6 +91,8 @@ class MovieServiceTest {
 
         assertEquals(true, movieService.deleteMovie(1L));
 
+        verify(reviewRepo).deleteByMovie_Id(1L);
+        verify(ratingRepo).deleteByMovie_Id(1L);
         verify(movieRepo).deleteById(1L);
     }
 
@@ -92,6 +102,8 @@ class MovieServiceTest {
 
         assertEquals(false, movieService.deleteMovie(2L));
 
+        verify(reviewRepo, never()).deleteByMovie_Id(any());
+        verify(ratingRepo, never()).deleteByMovie_Id(any());
         verify(movieRepo, never()).deleteById(any());
     }
 }

@@ -2,7 +2,10 @@ package edu.polytech.plateformefilms.service;
 
 import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.repository.MovieRepo;
+import edu.polytech.plateformefilms.repository.RatingRepo;
+import edu.polytech.plateformefilms.repository.ReviewRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -10,9 +13,13 @@ import java.util.List;
 public class MovieService {
 
     private final MovieRepo movieRepo;
+    private final ReviewRepo reviewRepo;
+    private final RatingRepo ratingRepo;
 
-    public MovieService(MovieRepo movieRepo) {
+    public MovieService(MovieRepo movieRepo, ReviewRepo reviewRepo, RatingRepo ratingRepo) {
         this.movieRepo = movieRepo;
+        this.reviewRepo = reviewRepo;
+        this.ratingRepo = ratingRepo;
     }
 
     public List<Movie> findAll() {
@@ -58,11 +65,14 @@ public class MovieService {
         return null;
     }
 
+    @Transactional
     public boolean deleteMovie(Long id) {
-        if (movieRepo.existsById(id)) {
-            movieRepo.deleteById(id);
-            return true;
+        if (!movieRepo.existsById(id)) {
+            return false;
         }
-        return false;
+        reviewRepo.deleteByMovie_Id(id);
+        ratingRepo.deleteByMovie_Id(id);
+        movieRepo.deleteById(id);
+        return true;
     }
 }

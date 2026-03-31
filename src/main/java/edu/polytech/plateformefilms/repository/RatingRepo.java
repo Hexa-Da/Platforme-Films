@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RatingRepo extends JpaRepository<Rating, Long> {
+    void deleteByMovie_Id(Long movieId);
+
     Optional<Rating> findByUserAndMovie(User user, Movie movie);
     List<Rating> findByMovie(Movie movie);
 }
