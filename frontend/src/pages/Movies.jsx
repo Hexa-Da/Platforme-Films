@@ -19,26 +19,53 @@ export default function Movies() {
   const isFirstFetch = useRef(true)
 
   useEffect(() => {
-    const delay = isFirstFetch.current ? 0 : DEBOUNCE_MS
-    isFirstFetch.current = false
+    const delay = isFirstFetch.current ? 0 : DEBOUNCE_MS;
+    isFirstFetch.current = false;
 
     const t = setTimeout(() => {
-      setLoading(true)
-      setError('')
-      const title = recherche.trim()
-      const genre = genreFilter.trim()
-      const params = {}
-      if (title) params.title = title
-      else if (genre) params.genre = genre
+      setLoading(true);
+      setError('');
 
-      getMovies(params)
-        .then(setMovies)
+      getMovies({
+        title: recherche.trim() || undefined,
+        genre: genreFilter.trim() || undefined
+      })
+        .then(async (moviesList) => {
+          const enrichedMovies = await Promise.all(
+            moviesList.map(async (movie) => {
+              try {
+                const res = await fetch(`${API_BASE}/movies/${movie.id}/ratings/average`);
+                if (!res.ok) return { ...movie, averageRating: 0 };
+                const avg = await res.json();
+                return { ...movie, averageRating: avg };
+              } catch {
+                return { ...movie, averageRating: 0 };
+              }
+            })
+          );
+          setMovies(enrichedMovies);
+        })
         .catch((err) => setError(err.message))
-        .finally(() => setLoading(false))
-    }, delay)
+        .finally(() => setLoading(false));
+    }, delay);
 
-    return () => clearTimeout(t)
-  }, [recherche, genreFilter])
+    return () => clearTimeout(t);
+  }, [recherche, genreFilter]);
+
+
+  const MovieStars = ({ rating }) => {
+    const roundedRating = Math.round(rating || 0);
+    return (
+      <div className="movie-card-stars" title={`Note : ${rating?.toFixed(1) || 0}/5`}>
+        {[...Array(5)].map((_, i) => (
+          <span key={i} className={`star ${i < roundedRating ? "on" : "off"}`}>
+            &#9733;
+          </span>
+        ))}
+        {rating > 0 && <span className="rating-number">({rating.toFixed(1)})</span>}
+      </div>
+    );
+  };
 
   const handleReviewSubmit = async (data) => {
     try {
@@ -95,7 +122,10 @@ export default function Movies() {
           <button
             type="button"
             className="btn-danger"
-            onClick={() => { logout(); window.location.reload() }}
+            onClick={() => {
+              logout();
+              window.location.reload();
+            }}
           >
             Déconnexion
           </button>
@@ -127,20 +157,41 @@ export default function Movies() {
       <div className="movies-grid">
         {movies.map((movie) => (
           <Link key={movie.id} to={`/movies/${movie.id}`} className="movie-card">
-            <h3>{movie.title}</h3>
+            {/* Header de la carte : Titre + Étoiles */}
+            <div className="movie-card-header">
+              <h3>{movie.title}</h3>
+              <div className="movie-card-stars">
+                {[...Array(5)].map((_, i) => (
+                  <span
+                    key={i}
+                    className={`star ${(movie.averageRating || 0) >= i + 1 ? 'on' : 'off'}`}
+                  >
+                    &#9733;
+                  </span>
+                ))}
+                {movie.averageRating > 0 && (
+                  <span className="rating-number">
+                    ({movie.averageRating.toFixed(1)})
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Infos secondaires */}
             <p>
               {movie.director} ({movie.releaseYear})
             </p>
             <p className="genre">{movie.genre}</p>
 
+            {/* Bouton Noter : visible seulement si connecté */}
             {token && (
               <button
                 type="button"
                 className="rate-button"
                 onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setSelectedMovie(movie)
+                  e.preventDefault(); // Empêche la navigation vers /movies/:id
+                  e.stopPropagation(); // Empêche le Link parent de s'activer
+                  setSelectedMovie(movie);
                 }}
               >
                 Noter ce film
@@ -150,6 +201,7 @@ export default function Movies() {
         ))}
       </div>
 
+      {/* Popup de notation */}
       {selectedMovie && (
         <ReviewPopup
           movieTitle={selectedMovie.title}
@@ -158,5 +210,5 @@ export default function Movies() {
         />
       )}
     </div>
-  )
+  );
 }
