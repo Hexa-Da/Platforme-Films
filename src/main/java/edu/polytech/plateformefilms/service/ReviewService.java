@@ -1,5 +1,8 @@
 package edu.polytech.plateformefilms.service;
 
+import edu.polytech.plateformefilms.exception.DuplicateException;
+import edu.polytech.plateformefilms.exception.ForbiddenException;
+import edu.polytech.plateformefilms.exception.NotFoundException;
 import edu.polytech.plateformefilms.model.Movie;
 import edu.polytech.plateformefilms.model.Review;
 import edu.polytech.plateformefilms.model.User;
@@ -23,55 +26,47 @@ public class ReviewService {
         this.userRepo = userRepo;
     }
 
-    // Méthodes
-
     public List<Review> getReviewsByMovie(Long movieId) {
         Movie movie = movieRepo.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("Film non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Film non trouvé"));
         return reviewRepo.findByMovie(movie);
     }
 
     public List<Review> getReviewsByUser(Long userId) {
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
         return reviewRepo.findByUser(user);
     }
 
     public Review getReviewById(Long reviewId) {
         return reviewRepo.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Critique introuvable"));
+                .orElseThrow(() -> new NotFoundException("Critique introuvable"));
     }
 
-
     public Review createReview(Long movieId, Long userId, String content) {
-        // On récupère les objets
         Movie movie = movieRepo.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("Film non trouvé"));
-
+                .orElseThrow(() -> new NotFoundException("Film non trouvé"));
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Erreur : L'utilisateur avec l'ID " + userId + " n'existe pas."));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
 
         if (reviewRepo.findByUserAndMovie(user, movie).isPresent()) {
-            throw new RuntimeException("Une critique existe déjà pour ce film");
+            throw new DuplicateException("Une critique existe déjà pour ce film");
         }
 
-        // On crée et remplit la review
         Review review = new Review();
-
         review.setMovie(movie);
         review.setUser(user);
         review.setContent(content);
-
         return reviewRepo.save(review);
     }
 
     public Review updateReview(Long movieId, Long reviewId, Long userId, String content) {
         Review review = getReviewById(reviewId);
         if (review.getMovie() == null || !movieId.equals(review.getMovie().getId())) {
-            throw new RuntimeException("Critique introuvable");
+            throw new NotFoundException("Critique introuvable");
         }
         if (review.getUser() == null || !userId.equals(review.getUser().getId())) {
-            throw new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !");
+            throw new ForbiddenException("Vous n'êtes pas l'auteur de cette critique");
         }
         review.setContent(content);
         return reviewRepo.save(review);
@@ -79,26 +74,21 @@ public class ReviewService {
 
     public Review updateMyReview(Long movieId, Long userId, String content) {
         Movie movie = movieRepo.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("Film non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Film non trouvé"));
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
         Review review = reviewRepo.findByUserAndMovie(user, movie)
-                .orElseThrow(() -> new RuntimeException("Critique introuvable"));
+                .orElseThrow(() -> new NotFoundException("Critique introuvable"));
         review.setContent(content);
         return reviewRepo.save(review);
     }
 
-
     public void deleteReview(Long reviewId, Long userId) {
-        // On récupère la critique
         Review review = reviewRepo.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Critique introuvable"));
-
-        // On vérifie que la personne qui supprime est l'auteure de la review
-        if (userId.equals(review.getUser().getId())) {
-            reviewRepo.delete(review);
-        } else {
-            throw new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !");
+                .orElseThrow(() -> new NotFoundException("Critique introuvable"));
+        if (!userId.equals(review.getUser().getId())) {
+            throw new ForbiddenException("Vous n'êtes pas l'auteur de cette critique");
         }
+        reviewRepo.delete(review);
     }
 }
