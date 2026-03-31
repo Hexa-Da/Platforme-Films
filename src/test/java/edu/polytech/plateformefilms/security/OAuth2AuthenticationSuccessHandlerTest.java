@@ -45,7 +45,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
         ArgumentCaptor<String> redirectCaptor = ArgumentCaptor.forClass(String.class);
         verify(response).sendRedirect(redirectCaptor.capture());
-        assertThat(redirectCaptor.getValue()).isEqualTo("http://frontend/oauth2/callback?token=jwt-token");
+        assertThat(redirectCaptor.getValue()).isEqualTo("http://frontend/oauth2/callback#token=jwt-token");
     }
 }
 

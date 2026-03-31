@@ -143,10 +143,20 @@ class MovieControllerTest {
     }
 
     @Test
-    void deleteMovie_returns204() throws Exception {
+    void deleteMovie_whenExists_returns204() throws Exception {
+        when(movieService.deleteMovie(1L)).thenReturn(true);
+
         mockMvc.perform(delete("/api/v1/movies/1"))
                 .andExpect(status().isNoContent());
 
         verify(movieService).deleteMovie(1L);
+    }
+
+    @Test
+    void deleteMovie_whenMissing_returns404() throws Exception {
+        when(movieService.deleteMovie(99L)).thenReturn(false);
+
+        mockMvc.perform(delete("/api/v1/movies/99"))
+                .andExpect(status().isNotFound());
     }
 }

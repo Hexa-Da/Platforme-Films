@@ -1,7 +1,11 @@
 package edu.polytech.plateformefilms.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.polytech.plateformefilms.config.GlobalExceptionHandler;
 import edu.polytech.plateformefilms.dto.RatingRequest;
+import edu.polytech.plateformefilms.exception.DuplicateException;
+import edu.polytech.plateformefilms.exception.ForbiddenException;
+import edu.polytech.plateformefilms.exception.NotFoundException;
 import edu.polytech.plateformefilms.model.Rating;
 import edu.polytech.plateformefilms.model.User;
 import edu.polytech.plateformefilms.repository.MovieRepo;
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -30,7 +35,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(RatingController.class)
-@AutoConfigureMockMvc(addFilters = false) // Désactive la sécurité pour éviter le 302 Redirect
+@Import(GlobalExceptionHandler.class)
+@AutoConfigureMockMvc(addFilters = false)
 class RatingControllerTest {
 
     @Autowired
@@ -58,12 +64,10 @@ class RatingControllerTest {
 
     @BeforeEach
     void setup() {
-        // On prépare un faux objet Authentication réutilisable qui renvoie "bob"
         mockAuth = mock(Authentication.class);
         when(mockAuth.getName()).thenReturn("bob");
     }
 
-    // --- TEST 1 : MOYENNE ---
     @Test
     void getAverageRating_ShouldReturnDouble() throws Exception {
         when(ratingService.getAverageRating(1L)).thenReturn(4.2);
@@ -73,7 +77,6 @@ class RatingControllerTest {
                 .andExpect(content().string("4.2"));
     }
 
-    // --- TEST 2 : LISTE DES NOTES ---
     @Test
     void getRatingsByMovie_ShouldReturnList() throws Exception {
         Rating r = new Rating();
@@ -90,7 +93,6 @@ class RatingControllerTest {
                 .andExpect(jsonPath("$[0].username").value("bob"));
     }
 
-    // --- TEST 3 : CRÉATION (AVEC AUTH) ---
     @Test
     void rateMovie_WhenAuthenticated_ShouldReturn201() throws Exception {
         RatingRequest request = new RatingRequest(4);
@@ -107,7 +109,7 @@ class RatingControllerTest {
         when(ratingService.createRating(eq(1L), eq(2L), eq(4))).thenReturn(mockRating);
 
         mockMvc.perform(post("/api/v1/movies/1/ratings")
-                        .principal(mockAuth) // Injection manuelle du mock d'auth
+                        .principal(mockAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -135,7 +137,7 @@ class RatingControllerTest {
         mockUser.setUsername("bob");
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(ratingService.createRating(eq(1L), eq(2L), eq(4)))
-                .thenThrow(new RuntimeException("Film non trouvé"));
+                .thenThrow(new NotFoundException("Film non trouvé"));
 
         mockMvc.perform(post("/api/v1/movies/1/ratings")
                         .principal(mockAuth)
@@ -152,7 +154,7 @@ class RatingControllerTest {
         mockUser.setUsername("bob");
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(ratingService.createRating(eq(1L), eq(2L), eq(4)))
-                .thenThrow(new RuntimeException("Une note existe déjà pour ce film"));
+                .thenThrow(new DuplicateException("Une note existe déjà pour ce film"));
 
         mockMvc.perform(post("/api/v1/movies/1/ratings")
                         .principal(mockAuth)
@@ -189,7 +191,7 @@ class RatingControllerTest {
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(ratingService.updateRating(1L, 50L, 2L, 5))
-                .thenThrow(new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette note !"));
+                .thenThrow(new ForbiddenException("Vous n'êtes pas l'auteur de cette note"));
 
         mockMvc.perform(put("/api/v1/movies/1/ratings/50")
                         .principal(mockAuth)
@@ -205,7 +207,7 @@ class RatingControllerTest {
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(ratingService.updateRating(1L, 50L, 2L, 5))
-                .thenThrow(new RuntimeException("Note introuvable"));
+                .thenThrow(new NotFoundException("Note introuvable"));
 
         mockMvc.perform(put("/api/v1/movies/1/ratings/50")
                         .principal(mockAuth)

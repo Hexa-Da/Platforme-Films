@@ -135,7 +135,7 @@ class ReviewServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 reviewService.updateReview(10L, 100L, 2L, "Texte modifié"));
 
-        assertTrue(exception.getMessage().contains("Interdit"));
+        assertTrue(exception.getMessage().contains("auteur"));
         verify(reviewRepo, never()).save(any());
     }
 

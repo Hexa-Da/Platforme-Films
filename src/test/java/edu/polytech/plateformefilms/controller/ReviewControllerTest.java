@@ -1,7 +1,11 @@
 package edu.polytech.plateformefilms.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.polytech.plateformefilms.config.GlobalExceptionHandler;
 import edu.polytech.plateformefilms.dto.ReviewRequest;
+import edu.polytech.plateformefilms.exception.DuplicateException;
+import edu.polytech.plateformefilms.exception.ForbiddenException;
+import edu.polytech.plateformefilms.exception.NotFoundException;
 import edu.polytech.plateformefilms.model.Review;
 import edu.polytech.plateformefilms.model.User;
 import edu.polytech.plateformefilms.repository.MovieRepo;
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,7 +37,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ReviewController.class)
-@AutoConfigureMockMvc(addFilters = false) // Désactive la sécurité pour éviter le 302 Redirect
+@Import(GlobalExceptionHandler.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ReviewControllerTest {
 
     @Autowired
@@ -47,7 +53,6 @@ class ReviewControllerTest {
     @MockitoBean
     private UserService userService;
 
-    // --- Mocks de "Nettoyage" pour le contexte Spring ---
     @MockitoBean
     private MovieRepo movieRepo;
 
@@ -61,14 +66,12 @@ class ReviewControllerTest {
 
     @BeforeEach
     void setup() {
-        // On prépare un faux objet Authentication qui renvoie "bob"
         mockAuth = mock(Authentication.class);
         when(mockAuth.getName()).thenReturn("bob");
     }
 
     @Test
     void getReviews_ShouldReturnList() throws Exception {
-        // GIVEN
         Review r = new Review();
         r.setContent("Super film !");
         User u = new User();
@@ -77,7 +80,6 @@ class ReviewControllerTest {
 
         when(reviewService.getReviewsByMovie(1L)).thenReturn(List.of(r));
 
-        // WHEN & THEN
         mockMvc.perform(get("/api/v1/movies/1/reviews"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].content").value("Super film !"))
@@ -86,7 +88,6 @@ class ReviewControllerTest {
 
     @Test
     void createReview_WhenAuthenticated_ShouldReturn201() throws Exception {
-        // GIVEN
         ReviewRequest request = new ReviewRequest("J'ai adoré !");
         User mockUser = new User();
         mockUser.setId(2L);
@@ -100,9 +101,8 @@ class ReviewControllerTest {
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(reviewService.createReview(eq(1L), eq(2L), anyString())).thenReturn(mockReview);
 
-        // WHEN & THEN
         mockMvc.perform(post("/api/v1/movies/1/reviews")
-                        .principal(mockAuth) // Injection manuelle pour éviter le NullPointer
+                        .principal(mockAuth)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -112,7 +112,6 @@ class ReviewControllerTest {
 
     @Test
     void deleteReview_AsAuthor_ShouldReturn204() throws Exception {
-        // GIVEN
         User mockUser = new User();
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
@@ -124,7 +123,6 @@ class ReviewControllerTest {
         review.setMovie(movie);
         when(reviewService.getReviewById(100L)).thenReturn(review);
 
-        // WHEN & THEN
         mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
                         .principal(mockAuth))
                 .andExpect(status().isNoContent());
@@ -154,7 +152,7 @@ class ReviewControllerTest {
         movie.setId(1L);
         review.setMovie(movie);
         when(reviewService.getReviewById(100L)).thenReturn(review);
-        doThrow(new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !"))
+        doThrow(new ForbiddenException("Vous n'êtes pas l'auteur de cette critique"))
                 .when(reviewService).deleteReview(100L, 2L);
 
         mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
@@ -185,7 +183,7 @@ class ReviewControllerTest {
         User mockUser = new User();
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
-        when(reviewService.getReviewById(100L)).thenThrow(new RuntimeException("Critique introuvable"));
+        when(reviewService.getReviewById(100L)).thenThrow(new NotFoundException("Critique introuvable"));
 
         mockMvc.perform(delete("/api/v1/movies/1/reviews/100")
                         .principal(mockAuth))
@@ -199,7 +197,7 @@ class ReviewControllerTest {
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(reviewService.createReview(eq(1L), eq(2L), anyString()))
-                .thenThrow(new RuntimeException("Une critique existe déjà pour ce film"));
+                .thenThrow(new DuplicateException("Une critique existe déjà pour ce film"));
 
         mockMvc.perform(post("/api/v1/movies/1/reviews")
                         .principal(mockAuth)
@@ -236,7 +234,7 @@ class ReviewControllerTest {
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(reviewService.updateReview(1L, 100L, 2L, "Texte modifié"))
-                .thenThrow(new RuntimeException("Interdit : Vous n'êtes pas l'auteur de cette critique !"));
+                .thenThrow(new ForbiddenException("Vous n'êtes pas l'auteur de cette critique"));
 
         mockMvc.perform(put("/api/v1/movies/1/reviews/100")
                         .principal(mockAuth)
@@ -252,7 +250,7 @@ class ReviewControllerTest {
         mockUser.setId(2L);
         when(userService.findByUsername("bob")).thenReturn(mockUser);
         when(reviewService.updateReview(1L, 100L, 2L, "Texte modifié"))
-                .thenThrow(new RuntimeException("Critique introuvable"));
+                .thenThrow(new NotFoundException("Critique introuvable"));
 
         mockMvc.perform(put("/api/v1/movies/1/reviews/100")
                         .principal(mockAuth)

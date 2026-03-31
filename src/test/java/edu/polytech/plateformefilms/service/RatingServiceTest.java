@@ -154,7 +154,7 @@ class RatingServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 ratingService.updateRating(1L, 100L, 99L, 5));
 
-        assertTrue(exception.getMessage().contains("Interdit"));
+        assertTrue(exception.getMessage().contains("auteur"));
         verify(ratingRepo, never()).save(any());
     }
 

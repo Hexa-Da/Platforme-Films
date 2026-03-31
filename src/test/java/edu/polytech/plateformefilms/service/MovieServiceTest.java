@@ -78,19 +78,19 @@ class MovieServiceTest {
     }
 
     @Test
-    void deleteMovie_whenExists_deletes() {
+    void deleteMovie_whenExists_deletesAndReturnsTrue() {
         when(movieRepo.existsById(1L)).thenReturn(true);
 
-        movieService.deleteMovie(1L);
+        assertEquals(true, movieService.deleteMovie(1L));
 
         verify(movieRepo).deleteById(1L);
     }
 
     @Test
-    void deleteMovie_whenMissing_doesNotDelete() {
+    void deleteMovie_whenMissing_returnsFalse() {
         when(movieRepo.existsById(2L)).thenReturn(false);
 
-        movieService.deleteMovie(2L);
+        assertEquals(false, movieService.deleteMovie(2L));
 
         verify(movieRepo, never()).deleteById(any());
     }
